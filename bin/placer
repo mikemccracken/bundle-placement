@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+# -*- mode: python; -*-
+#
+# Copyright 2015 Canonical, Ltd.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import argparse
+import asyncio
+import logging
+import sys
+import urwid
+import yaml
+
+
+from placement.config import Config
+from placement.controller import PlacementController
+from placement.placerview import PlacerView
+
+log = logging.getLogger('cloudinstall')
+
+    
+def parse_options(argv):
+    parser = argparse.ArgumentParser(description='Juju Bundle Placer',
+                                     prog='placer',
+                                     argument_default=argparse.SUPPRESS)
+    parser.add_argument("source_bundle", metavar='bundle', help="Bundle file to edit")
+    return parser.parse_args(argv)
+
+
+def build_main_loop(ui):
+    """ Returns event loop configured with color palette """
+    additional_opts = {
+        'screen': urwid.raw_display.Screen(),
+        'unhandled_input': None, #self.header_hotkeys,
+        'handle_mouse': True
+    }
+    additional_opts['screen'].set_terminal_properties(colors=256)
+    additional_opts['screen'].reset_default_terminal_palette()
+    evl = asyncio.get_event_loop()
+    return urwid.MainLoop(ui, {}, #STYLES,
+        event_loop=urwid.AsyncioEventLoop(loop=evl), **additional_opts)
+
+
+def main():
+    opts = parse_options(sys.argv[1:])
+    
+    log.info("Editing file: {}".format(opts.source_bundle))
+    srcbundle = yaml.load(opts.source_bundle)
+    config = Config('bundle-placer') # TODO: base name on env var? arg?
+    placement_controller = PlacementController(config=config)
+
+
+
+    ht = urwid.Text("HEADER")
+    ft = urwid.Text("Footer")
+    mainframe = urwid.Frame(urwid.Text("placeholder"), header=ht, footer=ft)
+    loop = build_main_loop(mainframe)
+    
+    mainview = PlacerView(placement_controller, loop, config)
+    mainframe.body = mainview
+    
+    loop.run()
+    
+    
+if __name__ == "__main__":
+    main()
