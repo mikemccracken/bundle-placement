@@ -13,17 +13,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from enum import Enum
-
 from placement.charm import Charm
+from placement.assignmenttype import AssignmentType
 import yaml
 
-class AssignmentType(Enum):
-    # both are equivalent to not specifying a type to juju:
-    DEFAULT = 1
-    BareMetal = 1
-    KVM = 2
-    LXC = 3
 
 def create_charm_class(servicename, service_dict, servicemeta):
     # some attempts to guess at subordinate status from bundle format,

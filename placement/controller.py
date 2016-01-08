@@ -23,17 +23,10 @@ from multiprocessing import cpu_count
 from cloudinstall.maas import (satisfies, MaasMachineStatus)
 from cloudinstall.state import CharmState
 
+from placement.assignmenttype import AssignmentType
 from placement.bundle import Bundle
 
 log = logging.getLogger('cloudinstall.placement')
-
-
-class AssignmentType(Enum):
-    # both are equivalent to not specifying a type to juju:
-    DEFAULT = 1
-    BareMetal = 1
-    KVM = 2
-    LXC = 3
 
 
 DEFAULT_SHARED_ASSIGNMENT_TYPE = AssignmentType.LXC
