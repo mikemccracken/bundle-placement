@@ -18,19 +18,44 @@
 
 import argparse
 import asyncio
+import json
 import logging
+import os
 import sys
 import urwid
 import yaml
 
-from cloudinstall.maas import connect_to_maas
+from cloudinstall.maas import connect_to_maas, MaasMachine
 
 from placement.config import Config
 from placement.controller import PlacementController
 from placement.log import setup_logger
 from placement.placerview import PlacerView
 
+log = None
+
+class FakeMaasState:
+
+    def machines(self, state=None, constraints=None):
+        fakepath = os.getenv("FAKE_API_DATA")
+        fn = os.path.join(fakepath, "maas-machines.json")
+        with open(fn) as f:
+            try:
+                nodes = json.load(f)
+            except:
+                log.exception("Error loading JSON")
+                return []
+        return [MaasMachine(-1, m) for m in nodes
+                if m['hostname'] != 'juju-bootstrap.maas']
+
+    def invalidate_nodes_cache(self):
+        "no op"
+
+    def machines_summary(self):
+        return "no summary for fake state"
+
     
+
 def parse_options(argv):
     parser = argparse.ArgumentParser(description='Juju Bundle Placer',
                                      prog='placer',
@@ -74,7 +99,7 @@ def main():
                      api_key=opts.maas_cred)
         maas, maas_state = connect_to_maas(creds)
     else:
-        maas_state = None
+        maas_state = FakeMaasState()
 
     placement_controller = PlacementController(config=config, maas_state=maas_state)
 
