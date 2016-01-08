@@ -17,7 +17,7 @@
 from urwid import (AttrMap, Button, Divider, GridFlow, Padding, Pile,
                    SelectableIcon, Text, WidgetWrap)
 
-from cloudinstall.placement.controller import AssignmentType
+from placement.controller import AssignmentType
 
 
 class MachineWidget(WidgetWrap):

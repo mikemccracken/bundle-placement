@@ -20,7 +20,7 @@ from urwid import (AttrMap, Divider, Padding, Pile, Text,
 
 from cloudinstall.maas import satisfies
 from cloudinstall.state import CharmState
-from cloudinstall.placement.ui.service_widget import ServiceWidget
+from placement.ui.service_widget import ServiceWidget
 
 log = logging.getLogger('cloudinstall.placement.ui')
 

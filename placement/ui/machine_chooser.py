@@ -17,10 +17,14 @@
 from urwid import (AttrMap, Button, Divider, GridFlow, LineBox, Pile,
                    Text, WidgetWrap)
 
-from cloudinstall.placement.controller import AssignmentType
+from placement.controller import AssignmentType
 
-from cloudinstall.placement.ui.service_widget import ServiceWidget
-from cloudinstall.placement.ui.machines_list import MachinesList
+from placement.ui.service_widget import ServiceWidget
+from placement.ui.machines_list import MachinesList
+
+import logging
+
+log = logging.getLogger('placement')
 
 
 class MachineChooser(WidgetWrap):

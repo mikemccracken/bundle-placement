@@ -38,7 +38,6 @@ class PlacerView(WidgetWrap):
         super().__init__(self.frame)
 
     def update(self, *args, **kwargs):
-        log.debug("updating")
         if self.pv is None:
             self.pv = PlacementView(display_controller=self,
                                     placement_controller=self.placement_controller,

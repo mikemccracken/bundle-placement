@@ -18,9 +18,9 @@ import logging
 from urwid import (AttrMap, Button, Columns, GridFlow,
                    LineBox, Pile, SelectableIcon, WidgetWrap)
 
-from cloudinstall.placement.controller import AssignmentType
-from cloudinstall.placement.ui.services_list import ServicesList
-from cloudinstall.state import CharmState
+from placement.controller import AssignmentType
+from placement.ui.services_list import ServicesList
+from state import CharmState
 
 log = logging.getLogger('cloudinstall.placement')
 
