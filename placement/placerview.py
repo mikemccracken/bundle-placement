@@ -15,20 +15,30 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 
 from urwid import Frame, WidgetWrap
 
 from placement.ui import PlacementView
 
+log = logging.getLogger('placement')
+
+
 class PlacerView(WidgetWrap):
 
     def __init__(self, placement_controller, loop, config):
-        pv = PlacementView(display_controller=self,
-                           placement_controller=placement_controller,
-                           loop=loop,
-                           config=config, do_deploy_cb=self.done_cb)
-        super().__init__(pv)
+        self.loop = loop
+        self.pv = PlacementView(display_controller=self,
+                                placement_controller=placement_controller,
+                                loop=loop,
+                                config=config, do_deploy_cb=self.done_cb)
+        super().__init__(self.pv)
 
+    def update(self, *args, **kwargs):
+        log.debug("updating")
+        self.pv.update()
+        self.loop.set_alarm_in(1, self.update)
+        
     def status_error_message(self, message):
         pass
 

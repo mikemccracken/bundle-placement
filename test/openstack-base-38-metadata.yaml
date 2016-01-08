@@ -1,0 +1,9 @@
+services:
+  nova-compute:
+    allowed_assignment_types: ['KVM', 'BareMetal']
+    depends: []
+    conflicts: []
+  ceph-radosgw:
+    required: False
+    depends: ['ceph']
+    conflicts: ['swift-proxy', 'swift-storage']

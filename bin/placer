@@ -23,19 +23,23 @@ import sys
 import urwid
 import yaml
 
+from cloudinstall.maas import connect_to_maas
 
 from placement.config import Config
 from placement.controller import PlacementController
+from placement.log import setup_logger
 from placement.placerview import PlacerView
-
-log = logging.getLogger('cloudinstall')
 
     
 def parse_options(argv):
     parser = argparse.ArgumentParser(description='Juju Bundle Placer',
                                      prog='placer',
                                      argument_default=argparse.SUPPRESS)
-    parser.add_argument("source_bundle", metavar='bundle', help="Bundle file to edit")
+    parser.add_argument("bundle_filename", metavar='bundle', help="Bundle file to edit")
+    parser.add_argument("--metadata", dest="metadata_filename", metavar='metadatafile',
+                        help="Optional metadata file describing constraints on services in bundle")
+    parser.add_argument("--maas-ip", dest="maas_ip", default=None)
+    parser.add_argument("--maas-cred", dest="maas_cred", default=None)
     return parser.parse_args(argv)
 
 
@@ -55,11 +59,24 @@ def build_main_loop(ui):
 
 def main():
     opts = parse_options(sys.argv[1:])
+
     
-    log.info("Editing file: {}".format(opts.source_bundle))
-    srcbundle = yaml.load(opts.source_bundle)
-    config = Config('bundle-placer') # TODO: base name on env var? arg?
-    placement_controller = PlacementController(config=config)
+    config = Config('bundle-placer', opts.__dict__)
+    config.save()
+
+    setup_logger(cfg_path=config.cfg_path)
+    log = logging.getLogger('placement')
+
+    log.info("Editing file: {}".format(opts.bundle_filename))
+
+    if opts.maas_ip and opts.maas_cred:
+        creds = dict(api_host=opts.maas_ip,
+                     api_key=opts.maas_cred)
+        maas, maas_state = connect_to_maas(creds)
+    else:
+        maas_state = None
+
+    placement_controller = PlacementController(config=config, maas_state=maas_state)
 
 
 
@@ -70,7 +87,7 @@ def main():
     
     mainview = PlacerView(placement_controller, loop, config)
     mainframe.body = mainview
-    
+    mainview.update()
     loop.run()
     
     

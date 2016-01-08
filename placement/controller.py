@@ -21,8 +21,9 @@ import yaml
 from multiprocessing import cpu_count
 
 from cloudinstall.maas import (satisfies, MaasMachineStatus)
-from cloudinstall.utils import load_charms
 from cloudinstall.state import CharmState
+
+from placement.bundle import Bundle
 
 log = logging.getLogger('cloudinstall.placement')
 
@@ -128,6 +129,8 @@ class PlacementController:
         self.assignments = defaultdict(lambda: defaultdict(list))
         self.deployments = defaultdict(lambda: defaultdict(list))
         self.autosave_filename = None
+        self.bundle = Bundle(config.getopt('bundle_filename'),
+                             config.getopt('metadata_filename'))
         self.reset_assigned_deployed()
 
     def get_temp_copy(self):
@@ -294,11 +297,8 @@ class PlacementController:
         return ms
 
     def charm_classes(self):
-        cl = [m.__charm_class__ for m in
-              load_charms(self.config.getopt('charm_plugin_dir'))
-              if not m.__charm_class__.disabled]
-
-        return cl
+        return self.bundle.charm_classes
+        
 
     def assigned_charm_classes(self):
         """Returns a deduplicated list of all charms that have a placement
@@ -584,7 +584,7 @@ class PlacementController:
 
         if charm_classes is None:
             charm_classes = self.charm_classes()
-
+        log.debug("in gen_defaults, charm_classes is {}".format(charm_classes))
         assignments = defaultdict(lambda: defaultdict(list))
 
         if maas_machines is None:
@@ -690,3 +690,4 @@ class PlacementController:
         import pprint
         log.debug("gen_single() = '{}'".format(pprint.pformat(assignments)))
         return assignments
+

@@ -30,18 +30,19 @@ class ConfigException(Exception):
 
 
 class Config:
-    def __init__(self, name, cfg_obj=None, cfg_file=None, save_backups=True):
+    def __init__(self, name, cfg_obj=None, save_backups=True):
         self.name = name
         if cfg_obj is None:
             self._config = {}
         else:
             self._config = cfg_obj
-        self._cfg_file = cfg_file
         self.save_backups = save_backups
 
     def save(self):
         """ Saves configuration """
         try:
+            if not os.path.exists(self.cfg_path):
+                os.makedirs(self.cfg_path)
             if self.save_backups and os.path.exists(self.cfg_file):
                 datestr = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
                 backup_path = os.path.join(self.cfg_path, "config-backups")
@@ -63,18 +64,12 @@ class Config:
     @property
     def cfg_path(self):
         """ top level configuration path """
-        if self._cfg_file is None:
-            fn = '~/.config/{}/config.yaml'.format(self.name)
-            return os.path.expanduser(fn)
-        else:
-            return os.path.dirname(self._cfg_file)
+        fn = '~/.config/{}'.format(self.name)
+        return os.path.expanduser(fn)
 
     @property
     def cfg_file(self):
-        if self._cfg_file is None:
-            return os.path.join(self.cfg_path, 'config.yaml')
-        else:
-            return self._cfg_file
+        return os.path.join(self.cfg_path, 'config.yaml')
 
     def setopt(self, key, val):
         """ sets config option """
