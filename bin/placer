@@ -78,15 +78,9 @@ def main():
 
     placement_controller = PlacementController(config=config, maas_state=maas_state)
 
-
-
-    ht = urwid.Text("HEADER")
-    ft = urwid.Text("Footer")
-    mainframe = urwid.Frame(urwid.Text("placeholder"), header=ht, footer=ft)
-    loop = build_main_loop(mainframe)
-    
-    mainview = PlacerView(placement_controller, loop, config)
-    mainframe.body = mainview
+    mainview = PlacerView(placement_controller, config)
+    loop = build_main_loop(mainview)
+    mainview.loop = loop
     mainview.update()
     loop.run()
     

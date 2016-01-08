@@ -17,7 +17,7 @@
 
 import logging
 
-from urwid import Frame, WidgetWrap
+from urwid import Frame, WidgetWrap, Pile, Text
 
 from placement.ui import PlacementView
 
@@ -26,16 +26,26 @@ log = logging.getLogger('placement')
 
 class PlacerView(WidgetWrap):
 
-    def __init__(self, placement_controller, loop, config):
-        self.loop = loop
-        self.pv = PlacementView(display_controller=self,
-                                placement_controller=placement_controller,
-                                loop=loop,
-                                config=config, do_deploy_cb=self.done_cb)
-        super().__init__(self.pv)
+    def __init__(self, placement_controller, config):
+        self.loop = None
+        self.pv = None
+        self.placement_controller = placement_controller
+        self.config = config
+        ht = Pile([Text("Header")])
+        ft = Pile([Text("Footer")])
+        self.frame = Frame(Text("placeholder"), header=ht, footer=ft)
+
+        super().__init__(self.frame)
 
     def update(self, *args, **kwargs):
         log.debug("updating")
+        if self.pv is None:
+            self.pv = PlacementView(display_controller=self,
+                                    placement_controller=self.placement_controller,
+                                    loop=self.loop,
+                                    config=self.config,
+                                    do_deploy_cb=self.done_cb)
+            self.frame.body = self.pv
         self.pv.update()
         self.loop.set_alarm_in(1, self.update)
         
@@ -46,4 +56,4 @@ class PlacerView(WidgetWrap):
         pass
         
     def done_cb(self):
-        pass
+        log.debug("done_cb called")
