@@ -17,7 +17,7 @@
 
 import logging
 
-from urwid import Frame, WidgetWrap, Pile, Text
+from urwid import Frame, WidgetWrap, Pile, Text, ExitMainLoop
 
 from placement.ui import PlacementView
 
@@ -56,3 +56,4 @@ class PlacerView(WidgetWrap):
         
     def done_cb(self):
         log.debug("done_cb called")
+        raise ExitMainLoop()
