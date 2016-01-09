@@ -17,3 +17,6 @@ class Charm:
 
     def required_num_units(self):
         return self.num_units
+
+    def __repr__(self):
+        return "<Charm {}>".format(self.charm_name)

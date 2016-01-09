@@ -481,7 +481,7 @@ class PlacementController:
                     state = CharmState.REQUIRED
                 depending.add(other_charm)
 
-        if charm in required_charms:
+        if charm.charm_name in [c.charm_name for c in required_charms]:
             state = CharmState.REQUIRED
 
         n_required = charm.required_num_units()
