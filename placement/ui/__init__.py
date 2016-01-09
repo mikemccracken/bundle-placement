@@ -1,4 +1,4 @@
-# Copyright 2014, 2015 Canonical, Ltd.
+# Copyright 2014-2016 Canonical, Ltd.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -195,18 +195,6 @@ class DeployView(WidgetWrap):
         self.main_pile.contents[0] = (AttrMap(self.deploy_grid,
                                               'deploy_highlight_start'),
                                       self.main_pile.options())
-
-        # XXX: What was this for?
-        # def fade_timeout(loop, step):
-        #     if step == 1:
-        #         self.loop.set_alarm_in(5, 2)
-        #         new_attr = 'deploy_highlight_end'
-        #     else:
-        #         new_attr = ''
-        #     self.main_pile.contents[0] = (AttrMap(self.deploy_grid,
-        #                                           new_attr),
-        #                                   self.main_pile.options())
-        # self.loop.set_alarm_in(4, 1)
         self.display_controller.status_info_message(self.deploy_ok_msg)
 
     def do_deploy(self, sender):
@@ -332,10 +320,9 @@ class PlacementView(WidgetWrap):
     """
 
     def __init__(self, display_controller, placement_controller,
-                 loop, config, do_deploy_cb):
+                 config, do_deploy_cb):
         self.display_controller = display_controller
         self.placement_controller = placement_controller
-        self.loop = loop
         self.config = config
         self.do_deploy_cb = do_deploy_cb
         w = self.build_widgets()
