@@ -26,6 +26,7 @@ import urwid
 import yaml
 
 from cloudinstall.maas import connect_to_maas, MaasMachine
+from cloudinstall.ui.palette import STYLES
 
 from placement.config import Config
 from placement.controller import PlacementController
@@ -78,7 +79,7 @@ def build_main_loop(ui, unhandled_input_func):
     additional_opts['screen'].set_terminal_properties(colors=256)
     additional_opts['screen'].reset_default_terminal_palette()
     evl = asyncio.get_event_loop()
-    return urwid.MainLoop(ui, {}, #STYLES,
+    return urwid.MainLoop(ui, STYLES,
         event_loop=urwid.AsyncioEventLoop(loop=evl), **additional_opts)
 
 
