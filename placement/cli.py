@@ -21,13 +21,13 @@ import sys
 import urwid
 
 from cloudinstall.maas import connect_to_maas, MaasMachine
-from cloudinstall.ui.palette import STYLES
 
 from placement.config import Config
 from placement.controller import PlacementController
 from placement.log import setup_logger
 from placement.placerview import PlacerView
 from ubuntui.ev import EventLoop
+from ubuntui.palette import STYLES
 
 log = None
 
