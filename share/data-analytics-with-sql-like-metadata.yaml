@@ -1,0 +1,20 @@
+services:
+  compute-node:
+    allowed_assignment_types: ['BareMetal', 'KVM']
+    required: True
+  hdphive:
+    allowed_assignment_types: ['KVM', 'LXC']
+    depends: []
+    conflicts: []
+  mysql:
+    required: True
+    depends: []
+    conflicts: []
+  yarn-hdfs-master:
+    required: True
+  kibana:
+    required: False
+    depends: ['compute-node']
+  elasticsearch:
+    required: False
+    depends: ['compute-node']
