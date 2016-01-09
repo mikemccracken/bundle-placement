@@ -14,29 +14,40 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from placement.charm import Charm
-from placement.assignmenttype import AssignmentType
+from placement.assignmenttype import AssignmentType, label_to_atype
 import yaml
+import logging
+
+log = logging.getLogger('placement')
 
 
 def create_charm_class(servicename, service_dict, servicemeta):
     # some attempts to guess at subordinate status from bundle format,
     # to avoid having to include it in metadata:
 
-    # This doesn't work because bundles with no machines might just use the juju default:
-    # is_subordinate = 'to' not in service_dict.keys()
+    # This doesn't work because bundles with no machines might
+    # just use the juju default: is_subordinate = 'to' not
+    # in service_dict.keys()
 
     is_subordinate = service_dict['num_units'] == 0
-    return Charm(charm_name=servicename,
-                 display_name=servicemeta.get('display-name', servicename),
-                 constraints=servicemeta.get('constraints', {}),
-                 depends=servicemeta.get('depends', []),
-                 conflicts=servicemeta.get('conflicts', []),
-                 allowed_assignment_types=servicemeta.get('allowed_assignment_types',
-                                                          list(AssignmentType)),
-                 num_units=service_dict.get('num_units', 1),
-                 allow_multi_units=servicemeta.get('allow_multi_units', True),
-                 subordinate=is_subordinate,
-                 required=servicemeta.get('required', True))
+    charm = Charm(charm_name=servicename,
+                  display_name=servicemeta.get('display-name', servicename),
+                  constraints=servicemeta.get('constraints', {}),
+                  depends=servicemeta.get('depends', []),
+                  conflicts=servicemeta.get('conflicts', []),
+                  allowed_assignment_types=servicemeta.get(
+                      'allowed_assignment_types',
+                      list(AssignmentType)),
+                  num_units=service_dict.get('num_units', 1),
+                  allow_multi_units=servicemeta.get('allow_multi_units', True),
+                  subordinate=is_subordinate,
+                  required=servicemeta.get('required', True))
+
+    # Make sure to map any strings to an assignment type enum
+    if any(isinstance(atype, str) for atype in charm.allowed_assignment_types):
+        charm.allowed_assignment_types = label_to_atype(
+            charm.allowed_assignment_types)
+    return charm
 
 
 class Bundle:
@@ -57,6 +68,3 @@ class Bundle:
             sm = metadata.get(servicename, {})
             charm_classes.append(create_charm_class(servicename, sd, sm))
         return charm_classes
-            
-        
-

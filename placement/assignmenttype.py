@@ -16,6 +16,30 @@
 from enum import Enum
 
 
+def label_to_atype(labels):
+    """ Maps labels in metadata to assignment types
+
+    Arguments:
+    labels: List of assignment types ['LXC', 'KVM', 'BareMetal']
+
+    Returns:
+    List of mapped enumerated assignment types
+    """
+    atypes = []
+    for label in labels:
+        if isinstance(label, AssignmentType):
+            atypes.append(label)
+        if label.lower() == "lxc":
+            atypes.append(AssignmentType.LXC)
+        elif label.lower() == "baremetal":
+            atypes.append(AssignmentType.BareMetal)
+        elif label.lower() == "kvm":
+            atypes.append(AssignmentType.KVM)
+        else:
+            return [AssignmentType.DEFAULT]
+    return atypes
+
+
 class AssignmentType(Enum):
     # both are equivalent to not specifying a type to juju:
     DEFAULT = 1
