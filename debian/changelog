@@ -1,0 +1,5 @@
+bundle-placer (0.0.1) wily; urgency=medium
+
+  * Initial Release
+
+ -- Adam Stokes <adam.stokes@ubuntu.com>  Sat, 11 Jan 2016 10:25:15 -0400

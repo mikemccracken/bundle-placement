@@ -60,7 +60,7 @@ class Config:
     def juju_env(self):
         "TODO: fake"
         return defaultdict(lambda: defaultdict(lambda: "?"))
-        
+
     @property
     def cfg_path(self):
         """ top level configuration path """

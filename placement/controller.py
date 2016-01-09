@@ -1,4 +1,4 @@
-# Copyright 2014 Canonical, Ltd.
+# Copyright 2014-2016 Canonical, Ltd.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -15,7 +15,7 @@
 
 from collections import defaultdict, Counter
 import copy
-from enum import Enum
+# from enum import Enum
 import logging
 import yaml
 from multiprocessing import cpu_count
@@ -291,7 +291,6 @@ class PlacementController:
 
     def charm_classes(self):
         return self.bundle.charm_classes
-        
 
     def assigned_charm_classes(self):
         """Returns a deduplicated list of all charms that have a placement
@@ -683,4 +682,3 @@ class PlacementController:
         import pprint
         log.debug("gen_single() = '{}'".format(pprint.pformat(assignments)))
         return assignments
-

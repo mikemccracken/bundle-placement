@@ -26,7 +26,7 @@ from placement.ui.machine_chooser import MachineChooser
 from placement.ui.machines_list import MachinesList
 from placement.ui.service_chooser import ServiceChooser
 from placement.ui.services_list import ServicesList
-from cloudinstall.ui.widgets import InfoDialogWidget
+from ubuntui.views import InfoDialogWidget
 from cloudinstall.state import CharmState
 
 log = logging.getLogger('cloudinstall.placement')

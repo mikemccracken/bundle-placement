@@ -2,3 +2,10 @@
 *~
 .coverage
 .tox
+.pybuild
+*.egg-info
+debian/bundle-placer*.log
+debian/bundle-placer*.debhelper
+debian/bundle-placer*.substvars
+debian/bundle-placer/*
+debian/files
