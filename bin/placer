@@ -68,11 +68,11 @@ def parse_options(argv):
     return parser.parse_args(argv)
 
 
-def build_main_loop(ui):
+def build_main_loop(ui, unhandled_input_func):
     """ Returns event loop configured with color palette """
     additional_opts = {
         'screen': urwid.raw_display.Screen(),
-        'unhandled_input': None, #self.header_hotkeys,
+        'unhandled_input': unhandled_input_func,
         'handle_mouse': True
     }
     additional_opts['screen'].set_terminal_properties(colors=256)
@@ -104,7 +104,10 @@ def main():
     placement_controller = PlacementController(config=config, maas_state=maas_state)
 
     mainview = PlacerView(placement_controller, config)
-    loop = build_main_loop(mainview)
+    def unhandled_input(key):
+        if key in ['q', 'Q']:
+            raise urwid.ExitMainLoop()
+    loop = build_main_loop(mainview, unhandled_input)
     mainview.loop = loop
     mainview.update()
     loop.run()
