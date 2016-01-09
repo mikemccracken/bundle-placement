@@ -17,43 +17,41 @@
 
 import logging
 
-from urwid import Frame, WidgetWrap, Pile, Text, ExitMainLoop
-
 from placement.ui import PlacementView
+from ubuntui.ev import EventLoop
+from ubuntui.frame import Frame
 
 log = logging.getLogger('placement')
 
 
-class PlacerView(WidgetWrap):
+class PlacerView(Frame):
 
     def __init__(self, placement_controller, config):
-        self.loop = None
         self.pv = None
         self.placement_controller = placement_controller
         self.config = config
-        ht = Pile([Text("Header")])
-        ft = Pile([Text("Footer")])
-        self.frame = Frame(Text("placeholder"), header=ht, footer=ft)
-
-        super().__init__(self.frame)
+        super().__init__()
 
     def update(self, *args, **kwargs):
         if self.pv is None:
-            self.pv = PlacementView(display_controller=self,
-                                    placement_controller=self.placement_controller,
-                                    loop=self.loop,
-                                    config=self.config,
-                                    do_deploy_cb=self.done_cb)
-            self.frame.body = self.pv
+            self.pv = PlacementView(
+                display_controller=self,
+                placement_controller=self.placement_controller,
+                config=self.config,
+                do_deploy_cb=self.done_cb)
+            self.set_header(
+                title="Bundle Editor"
+            )
+            self.set_body(self.pv)
         self.pv.update()
-        self.loop.set_alarm_in(1, self.update)
-        
+        EventLoop.set_alarm_in(1, self.update)
+
     def status_error_message(self, message):
         pass
 
     def status_info_message(self, message):
         pass
-        
+
     def done_cb(self):
         log.debug("done_cb called")
-        raise ExitMainLoop()
+        EventLoop.exit(0)
