@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- mode: python; -*-
-#
 # Copyright 2015 Canonical, Ltd.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,13 +14,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
-import asyncio
 import json
 import logging
 import os
 import sys
 import urwid
-import yaml
 
 from cloudinstall.maas import connect_to_maas, MaasMachine
 from cloudinstall.ui.palette import STYLES
@@ -32,8 +27,10 @@ from placement.config import Config
 from placement.controller import PlacementController
 from placement.log import setup_logger
 from placement.placerview import PlacerView
+from ubuntui.ev import EventLoop
 
 log = None
+
 
 class FakeMaasState:
 
@@ -55,38 +52,25 @@ class FakeMaasState:
     def machines_summary(self):
         return "no summary for fake state"
 
-    
 
 def parse_options(argv):
     parser = argparse.ArgumentParser(description='Juju Bundle Placer',
                                      prog='placer',
                                      argument_default=argparse.SUPPRESS)
-    parser.add_argument("bundle_filename", metavar='bundle', help="Bundle file to edit")
-    parser.add_argument("--metadata", dest="metadata_filename", metavar='metadatafile',
-                        help="Optional metadata file describing constraints on services in bundle")
+    parser.add_argument("bundle_filename", metavar='bundle',
+                        help="Bundle file to edit")
+    parser.add_argument("--metadata", dest="metadata_filename",
+                        metavar='metadatafile',
+                        help="Optional metadata file describing constraints "
+                        "on services in bundle")
     parser.add_argument("--maas-ip", dest="maas_ip", default=None)
     parser.add_argument("--maas-cred", dest="maas_cred", default=None)
     return parser.parse_args(argv)
 
 
-def build_main_loop(ui, unhandled_input_func):
-    """ Returns event loop configured with color palette """
-    additional_opts = {
-        'screen': urwid.raw_display.Screen(),
-        'unhandled_input': unhandled_input_func,
-        'handle_mouse': True
-    }
-    additional_opts['screen'].set_terminal_properties(colors=256)
-    additional_opts['screen'].reset_default_terminal_palette()
-    evl = asyncio.get_event_loop()
-    return urwid.MainLoop(ui, STYLES,
-        event_loop=urwid.AsyncioEventLoop(loop=evl), **additional_opts)
-
-
 def main():
     opts = parse_options(sys.argv[1:])
 
-    
     config = Config('bundle-placer', opts.__dict__)
     config.save()
 
@@ -102,17 +86,15 @@ def main():
     else:
         maas_state = FakeMaasState()
 
-    placement_controller = PlacementController(config=config, maas_state=maas_state)
+    placement_controller = PlacementController(config=config,
+                                               maas_state=maas_state)
 
     mainview = PlacerView(placement_controller, config)
+
     def unhandled_input(key):
         if key in ['q', 'Q']:
             raise urwid.ExitMainLoop()
-    loop = build_main_loop(mainview, unhandled_input)
-    mainview.loop = loop
+    EventLoop.build_loop(mainview, STYLES, unhandled_input=unhandled_input)
+    mainview.loop = EventLoop.loop
     mainview.update()
-    loop.run()
-    
-    
-if __name__ == "__main__":
-    main()
+    EventLoop.run()

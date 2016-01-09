@@ -1,0 +1,15 @@
+#!/usr/bin/make -f
+
+export PYBUILD_NAME=bundle-placer
+export PYBUILD_INSTALL_DIR=usr/share/bundle-placer
+export PYBUILD_INSTALL_ARGS_python3=--install-lib=usr/share/bundle-placer \
+	--install-data=usr/ \
+	--install-scripts=usr/share/bundle-placer \
+	--root=$(CURDIR)/debian/bundle-placer/ \
+	--no-compile -O0
+
+%:
+	dh $@ --with python3 --buildsystem=pybuild
+
+override_dh_auto_test:
+	@echo "No tests."

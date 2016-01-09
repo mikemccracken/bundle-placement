@@ -1,0 +1,43 @@
+Source: bundle-placer
+Section: admin
+Priority: extra
+Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+Build-Depends: debhelper (>= 9),
+               dh-python,
+               pep8,
+               pyflakes,
+               python3-all,
+               python3-jinja2,
+               python3-nose,
+               python3-requests,
+               python3-setuptools,
+               python3-theblues,
+               python3-urwid,
+               python3-urwid-ubuntu,
+               python3-yaml,
+               python3-jujuclient,
+               openstack
+Standards-Version: 3.9.6
+Homepage: https://github.com/Ubuntu-Solutions-Engineering/bundle-placement
+X-Python3-Version: >= 3.4
+Vcs-Browser: https://github.com/Ubuntu-Solutions-Engineering/bundle-placement
+Vcs-Git: https://github.com/Ubuntu-Solutions-Engineering/bundle-placement.git
+
+Package: bundle-placer
+Architecture: all
+Depends: gawk,
+         juju-core,
+         python3-jinja2,
+         python3-requests,
+         python3-theblues,
+         python3-urwid,
+         python3-urwid-ubuntu,
+         python3-yaml,
+         python3-jujuclient,
+         openstack
+         ${misc:Depends},
+         ${python3:Depends},
+         ${shlibs:Depends}
+Description: Bundle Placer
+ This package provides bundle placer a runtime for placing services
+ and configuring services from a charm bundle.yaml.
