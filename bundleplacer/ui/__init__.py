@@ -27,9 +27,10 @@ from bundleplacer.ui.machines_list import MachinesList
 from bundleplacer.ui.service_chooser import ServiceChooser
 from bundleplacer.ui.services_list import ServicesList
 from ubuntui.views import InfoDialogWidget
+from ubuntui.widgets import MetaScroll
 from cloudinstall.state import CharmState
 
-log = logging.getLogger('cloudinstall.placement')
+log = logging.getLogger('placement')
 
 
 BUTTON_SIZE = 20
@@ -103,12 +104,14 @@ class ServicesColumn(WidgetWrap):
         self.top_button_grid = GridFlow(self.top_buttons,
                                         36, 1, 0, 'center')
 
-        pl = [Text(('subheading', "Services"), align='center'),
-              Divider(),
-              self.top_button_grid, Divider(),
-              self.deploy_view, Divider(),
-              self.required_services_pile, Divider(),
-              self.additional_services_pile]
+        pl = [
+            Text(("body", "Services"), align='center'),
+            Divider(),
+            self.top_button_grid, Divider(),
+            self.deploy_view, Divider(),
+            self.required_services_pile, Divider(),
+            self.additional_services_pile
+        ]
 
         self.main_pile = Pile(pl)
 
@@ -256,7 +259,8 @@ class MachinesColumn(WidgetWrap):
 
         # placeholders replaced in update() with absolute indexes, so
         # if you change this list, check update().
-        pl = [Text(('subheading', "Machines"), align='center'),
+        pl = [Text(('body', "Machines {}".format(MetaScroll().get_text()[0])),
+                   align='center'),
               Divider(),
               Pile([]),         # machines_list
               Divider()]
@@ -346,11 +350,7 @@ class PlacementView(WidgetWrap):
 
         self.columns = Columns([self.services_column,
                                 self.machines_column])
-        self.main_pile = Pile([Divider(),
-                               Text(('subheading', "Machine Placement"),
-                                    align='center'),
-                               Divider(),
-                               Padding(self.columns,
+        self.main_pile = Pile([Padding(self.columns,
                                        align='center',
                                        width=('relative', 95))])
         return Filler(self.main_pile, valign='top')
