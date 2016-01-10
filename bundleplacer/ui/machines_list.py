@@ -18,8 +18,8 @@ from urwid import (AttrMap, Divider, Padding, Pile, Text, WidgetWrap)
 
 from cloudinstall.maas import satisfies
 
-from placement.ui.filter_box import FilterBox
-from placement.ui.machine_widget import MachineWidget
+from bundleplacer.ui.filter_box import FilterBox
+from bundleplacer.ui.machine_widget import MachineWidget
 
 log = logging.getLogger('cloudinstall.placement')
 

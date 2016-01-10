@@ -20,12 +20,12 @@ from urwid import (AttrMap, Button, Columns, Divider, Filler,
                    GridFlow, Overlay, Padding, Pile, SelectableIcon,
                    Text, WidgetWrap)
 
-from placement.controller import AssignmentType
+from bundleplacer.controller import AssignmentType
 
-from placement.ui.machine_chooser import MachineChooser
-from placement.ui.machines_list import MachinesList
-from placement.ui.service_chooser import ServiceChooser
-from placement.ui.services_list import ServicesList
+from bundleplacer.ui.machine_chooser import MachineChooser
+from bundleplacer.ui.machines_list import MachinesList
+from bundleplacer.ui.service_chooser import ServiceChooser
+from bundleplacer.ui.services_list import ServicesList
 from ubuntui.views import InfoDialogWidget
 from cloudinstall.state import CharmState
 

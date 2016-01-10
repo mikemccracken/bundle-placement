@@ -23,8 +23,8 @@ from multiprocessing import cpu_count
 from cloudinstall.maas import (satisfies, MaasMachineStatus)
 from cloudinstall.state import CharmState
 
-from placement.assignmenttype import AssignmentType
-from placement.bundle import Bundle
+from bundleplacer.assignmenttype import AssignmentType
+from bundleplacer.bundle import Bundle
 
 log = logging.getLogger('cloudinstall.placement')
 

@@ -17,32 +17,32 @@
 
 import logging
 
-from placement.ui import PlacementView
+from urwid import WidgetWrap
+from bundleplacer.ui import PlacementView
 from ubuntui.ev import EventLoop
 from ubuntui.frame import Frame
 
 log = logging.getLogger('placement')
 
 
-class PlacerView(Frame):
+class PlacerUI(Frame):
+    def __init__(self, placerview):
+        self.body = PlacerView
+        super().__init__(body=placerview)
 
+
+class PlacerView(WidgetWrap):
     def __init__(self, placement_controller, config):
-        self.pv = None
         self.placement_controller = placement_controller
         self.config = config
-        super().__init__()
+        self.pv = PlacementView(
+            display_controller=self,
+            placement_controller=self.placement_controller,
+            config=self.config,
+            do_deploy_cb=self.done_cb)
+        super().__init__(self.pv)
 
     def update(self, *args, **kwargs):
-        if self.pv is None:
-            self.pv = PlacementView(
-                display_controller=self,
-                placement_controller=self.placement_controller,
-                config=self.config,
-                do_deploy_cb=self.done_cb)
-            self.set_header(
-                title="Bundle Editor"
-            )
-            self.set_body(self.pv)
         self.pv.update()
         EventLoop.set_alarm_in(1, self.update)
 

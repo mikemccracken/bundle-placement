@@ -17,10 +17,10 @@
 from urwid import (AttrMap, Button, Divider, GridFlow, LineBox, Pile,
                    Text, WidgetWrap)
 
-from placement.assignmenttype import AssignmentType
+from bundleplacer.assignmenttype import AssignmentType
 
-from placement.ui.service_widget import ServiceWidget
-from placement.ui.machines_list import MachinesList
+from bundleplacer.ui.service_widget import ServiceWidget
+from bundleplacer.ui.machines_list import MachinesList
 
 import logging
 

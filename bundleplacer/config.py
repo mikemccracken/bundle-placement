@@ -71,6 +71,12 @@ class Config:
     def cfg_file(self):
         return os.path.join(self.cfg_path, 'config.yaml')
 
+    @classmethod
+    def share_path(cls):
+        """ Application share path
+        """
+        return "/usr/share/bundle-placer/share"
+
     def setopt(self, key, val):
         """ sets config option """
         try:

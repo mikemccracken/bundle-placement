@@ -17,8 +17,8 @@
 from urwid import (AttrMap, Button, Divider, GridFlow, LineBox, Pile,
                    Text, WidgetWrap)
 
-from placement.ui.machine_widget import MachineWidget
-from placement.ui.services_list import ServicesList
+from bundleplacer.ui.machine_widget import MachineWidget
+from bundleplacer.ui.services_list import ServicesList
 
 
 class ServiceChooser(WidgetWrap):

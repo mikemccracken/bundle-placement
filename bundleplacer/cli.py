@@ -14,43 +14,25 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
-import json
 import logging
 import os
 import sys
 import urwid
 
-from cloudinstall.maas import connect_to_maas, MaasMachine
+lib_dir = os.path.abspath('/usr/share/openstack')
+sys.path.insert(0, lib_dir)
 
-from placement.config import Config
-from placement.controller import PlacementController
-from placement.log import setup_logger
-from placement.placerview import PlacerView
+from cloudinstall.maas import connect_to_maas
+
+from bundleplacer.config import Config
+from bundleplacer.controller import PlacementController
+from bundleplacer.log import setup_logger
+from bundleplacer.placerview import PlacerView, PlacerUI
+from bundleplacer.fixtures.maas import FakeMaasState
 from ubuntui.ev import EventLoop
 from ubuntui.palette import STYLES
 
 log = None
-
-
-class FakeMaasState:
-
-    def machines(self, state=None, constraints=None):
-        fakepath = os.getenv("FAKE_API_DATA")
-        fn = os.path.join(fakepath, "maas-machines.json")
-        with open(fn) as f:
-            try:
-                nodes = json.load(f)
-            except:
-                log.exception("Error loading JSON")
-                return []
-        return [MaasMachine(-1, m) for m in nodes
-                if m['hostname'] != 'juju-bootstrap.maas']
-
-    def invalidate_nodes_cache(self):
-        "no op"
-
-    def machines_summary(self):
-        return "no summary for fake state"
 
 
 def parse_options(argv):
@@ -76,6 +58,7 @@ def main():
 
     setup_logger(cfg_path=config.cfg_path)
     log = logging.getLogger('placement')
+    log.debug(opts.__dict__)
 
     log.info("Editing file: {}".format(opts.bundle_filename))
 
@@ -90,11 +73,12 @@ def main():
                                                maas_state=maas_state)
 
     mainview = PlacerView(placement_controller, config)
+    ui = PlacerUI(mainview)
 
     def unhandled_input(key):
         if key in ['q', 'Q']:
             raise urwid.ExitMainLoop()
-    EventLoop.build_loop(mainview, STYLES, unhandled_input=unhandled_input)
+    EventLoop.build_loop(ui, STYLES, unhandled_input=unhandled_input)
     mainview.loop = EventLoop.loop
     mainview.update()
     EventLoop.run()

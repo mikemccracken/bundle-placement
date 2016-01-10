@@ -13,8 +13,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from placement.charm import Charm
-from placement.assignmenttype import AssignmentType, label_to_atype
+from bundleplacer.charm import Charm
+from bundleplacer.assignmenttype import AssignmentType, label_to_atype
 import yaml
 import logging
 

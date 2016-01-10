@@ -12,9 +12,3 @@ services:
     conflicts: []
   yarn-hdfs-master:
     required: True
-  kibana:
-    required: False
-    depends: ['compute-node']
-  elasticsearch:
-    required: False
-    depends: ['compute-node']
