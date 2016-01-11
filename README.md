@@ -1,5 +1,24 @@
 # bundle-placer
-> Bundle Machine Placement UI for Juju
+
+Bundle Machine Placement UI for Juju
+
+## testing
+This is part of a larger project, but it can also be run standalone.
+
+To give this a try without building a package and installing, use the setup.py script:
+
+```
+python setup.py develop --install-dir=`pwd`
+```
+
+using `pwd` puts the binary in the current dir, but making that anywhere on your `$PYTHONPATH` is fine.
+
+then to give it a try with a sample bundle and faked MAAS machines:
+
+```
+python3 ./bundle-placer share/data-analytics-with-sql-like.yaml --metadata share/data-analytics-with-sql-like-metadata.yaml
+```
+
 
 # copyright
 Copyright (C) 2016  Canonical, Ltd.
