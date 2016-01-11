@@ -24,7 +24,7 @@ from bundleplacer.ui.machines_list import MachinesList
 
 import logging
 
-log = logging.getLogger('placement')
+log = logging.getLogger('bundleplacer')
 
 
 class MachineChooser(WidgetWrap):

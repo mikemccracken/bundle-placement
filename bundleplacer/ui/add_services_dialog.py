@@ -22,7 +22,7 @@ from bundleplacer.controller import AssignmentType
 from bundleplacer.ui.services_list import ServicesList
 from state import CharmState
 
-log = logging.getLogger('cloudinstall.placement')
+log = logging.getLogger('bundleplacer')
 
 
 BUTTON_SIZE = 20

@@ -22,7 +22,7 @@ import os
 import yaml
 
 
-log = logging.getLogger('placement')
+log = logging.getLogger('bundleplacer')
 
 
 class ConfigException(Exception):

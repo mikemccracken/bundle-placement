@@ -22,7 +22,7 @@ from cloudinstall.maas import satisfies
 from cloudinstall.state import CharmState
 from bundleplacer.ui.service_widget import ServiceWidget
 
-log = logging.getLogger('cloudinstall.placement.ui')
+log = logging.getLogger('bundleplacer.ui')
 
 
 class ServicesList(WidgetWrap):

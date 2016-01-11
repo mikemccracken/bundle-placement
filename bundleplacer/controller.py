@@ -26,7 +26,7 @@ from cloudinstall.state import CharmState
 from bundleplacer.assignmenttype import AssignmentType
 from bundleplacer.bundle import Bundle
 
-log = logging.getLogger('cloudinstall.placement')
+log = logging.getLogger('bundleplacer')
 
 
 DEFAULT_SHARED_ASSIGNMENT_TYPE = AssignmentType.LXC

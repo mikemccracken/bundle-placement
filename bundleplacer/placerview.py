@@ -22,7 +22,7 @@ from bundleplacer.ui import PlacementView
 from ubuntui.ev import EventLoop
 from ubuntui.frame import Frame
 
-log = logging.getLogger('placement')
+log = logging.getLogger('bundleplacer')
 
 
 class PlacerUI(Frame):

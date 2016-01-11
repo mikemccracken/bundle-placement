@@ -18,7 +18,7 @@ from bundleplacer.assignmenttype import AssignmentType, label_to_atype
 import yaml
 import logging
 
-log = logging.getLogger('placement')
+log = logging.getLogger('bundleplacer')
 
 
 def create_charm_class(servicename, service_dict, servicemeta):

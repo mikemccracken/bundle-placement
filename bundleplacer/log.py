@@ -56,7 +56,7 @@ def setup_logger(name=__name__, cfg_path='.'):
 
     no_filter = os.environ.get('PLACEMENT_NOFILTER', None)
     if no_filter is None:
-        f = logging.Filter(name='placement')
+        f = logging.Filter(name='bundleplacer')
         commandslog.addFilter(f)
 
     logger.addHandler(commandslog)

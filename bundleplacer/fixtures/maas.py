@@ -24,7 +24,7 @@ sys.path.insert(0, lib_dir)
 
 from cloudinstall.maas import MaasMachine
 
-log = logging.getLogger("placement")
+log = logging.getLogger('bundleplacer')
 
 
 class FakeMaasState:

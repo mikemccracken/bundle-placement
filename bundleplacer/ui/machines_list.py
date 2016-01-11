@@ -21,7 +21,7 @@ from cloudinstall.maas import satisfies
 from bundleplacer.ui.filter_box import FilterBox
 from bundleplacer.ui.machine_widget import MachineWidget
 
-log = logging.getLogger('cloudinstall.placement')
+log = logging.getLogger('bundleplacer')
 
 
 class MachinesList(WidgetWrap):

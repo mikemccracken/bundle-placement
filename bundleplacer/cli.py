@@ -57,7 +57,7 @@ def main():
     config.save()
 
     setup_logger(cfg_path=config.cfg_path)
-    log = logging.getLogger('placement')
+    log = logging.getLogger('bundleplacer')
     log.debug(opts.__dict__)
 
     log.info("Editing file: {}".format(opts.bundle_filename))

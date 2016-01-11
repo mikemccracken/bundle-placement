@@ -30,7 +30,7 @@ from ubuntui.views import InfoDialogWidget
 from ubuntui.widgets import MetaScroll
 from cloudinstall.state import CharmState
 
-log = logging.getLogger('placement')
+log = logging.getLogger('bundleplacer')
 
 
 BUTTON_SIZE = 20

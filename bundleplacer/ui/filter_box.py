@@ -18,7 +18,7 @@ import logging
 from urwid import (AttrMap, Columns, connect_signal, Edit, Pile, Text,
                    WidgetWrap)
 
-log = logging.getLogger('cloudinstall.placement')
+log = logging.getLogger('bundleplacer')
 
 
 class FilterBox(WidgetWrap):
