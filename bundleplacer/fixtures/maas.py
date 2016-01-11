@@ -35,6 +35,8 @@ class FakeMaasState:
     def machines(self, state=None, constraints=None):
         fakepath = '/usr/share/bundle-placer/share'
         fn = os.path.join(fakepath, "maas-machines.json")
+        if not os.path.exists(fn):
+            fn = os.path.join("share", "maas-machines.json")
         with open(fn) as f:
             try:
                 nodes = json.load(f)
