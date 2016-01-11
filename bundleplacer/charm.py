@@ -34,4 +34,13 @@ class Charm:
         return self.num_units
 
     def __repr__(self):
-        return "<Charm {}>".format(self.__dict__)
+        return "<Charm {}>".format(self.charm_name)
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
+    def __hash__(self):
+        """We assume that we won't instantiate multiple Charm objects for the
+        same class that have different properties.
+        """
+        return hash(self.charm_name)
