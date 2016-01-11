@@ -28,7 +28,7 @@ class Charm:
         self.allow_multi_units = allow_multi_units
         self.subordinate = subordinate
         self.is_core = required
-        self.isolate = False
+        self.isolate = True
 
     def required_num_units(self):
         return self.num_units
