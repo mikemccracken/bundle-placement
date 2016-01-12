@@ -26,8 +26,9 @@ def create_charm_class(servicename, service_dict, servicemeta):
     # to avoid having to include it in metadata:
 
     # This doesn't work because bundles with no machines might
-    # just use the juju default: is_subordinate = 'to' not
-    # in service_dict.keys()
+    # just use the juju default:
+
+    # is_subordinate = 'to' not in service_dict.keys()
 
     is_subordinate = service_dict['num_units'] == 0
     charm = Charm(charm_name=servicename,
