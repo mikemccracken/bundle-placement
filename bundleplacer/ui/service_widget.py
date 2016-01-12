@@ -65,6 +65,8 @@ class ServiceWidget(WidgetWrap):
     def build_widgets(self):
         dn = self.charm_class.display_name
         self.title_markup = ["\N{GEAR} {}".format(dn), ""]
+        if self.charm_class.summary != "":
+            self.title_markup.append("\n {}\n".format(self.charm_class.summary))
 
         self.charm_info_widget = Text(self.title_markup)
         self.placements_widget = Text("")
