@@ -1,14 +1,10 @@
 services:
   compute-node:
     allowed_assignment_types: ['BareMetal', 'KVM']
-    required: True
   hdphive:
     allowed_assignment_types: ['KVM', 'LXC']
     depends: []
     conflicts: []
   mysql:
-    required: True
     depends: []
     conflicts: []
-  yarn-hdfs-master:
-    required: True
