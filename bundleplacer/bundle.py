@@ -13,13 +13,30 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import yaml
 import logging
+from theblues.charmstore import CharmStore
+import yaml
 
 from bundleplacer.charm import Charm
 from bundleplacer.assignmenttype import AssignmentType, label_to_atype
 
 log = logging.getLogger('bundleplacer')
+
+from functools import lru_cache
+
+
+class CharmStoreAPI:
+    _charmstore = None
+
+    def __init__(self):
+        if not CharmStoreAPI._charmstore:
+            CharmStoreAPI._charmstore = CharmStore('https://api.jujucharms.com/v4')
+
+    @classmethod
+    @lru_cache(maxsize=128)
+    def lookup_charm(self, charm_name):
+        entity = CharmStoreAPI._charmstore.entity(charm_name)
+        return entity
 
 
 def create_charm_class(servicename, service_dict, servicemeta):
@@ -32,8 +49,16 @@ def create_charm_class(servicename, service_dict, servicemeta):
     # is_subordinate = 'to' not in service_dict.keys()
 
     is_subordinate = service_dict['num_units'] == 0
+
+    charm_name = service_dict['charm'].split('/')[-1]
+    charm_name = '-'.join(charm_name.split('-')[:-1])
+    entity = CharmStoreAPI().lookup_charm(charm_name)
+    display_name = "{} ({})".format(servicename, entity['Meta']['charm-metadata']['Name'])
+    summary = entity['Meta']['charm-metadata']['Summary']
+
     charm = Charm(charm_name=servicename,
-                  display_name=servicemeta.get('display-name', servicename),
+                  display_name=servicemeta.get('display-name', display_name),
+                  summary=servicemeta.get('summary', summary),
                   constraints=servicemeta.get('constraints', {}),
                   depends=servicemeta.get('depends', []),
                   conflicts=servicemeta.get('conflicts', []),
