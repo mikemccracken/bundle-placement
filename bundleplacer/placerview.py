@@ -32,9 +32,10 @@ class PlacerUI(Frame):
 
 
 class PlacerView(WidgetWrap):
-    def __init__(self, placement_controller, config):
+    def __init__(self, placement_controller, config, cb):
         self.placement_controller = placement_controller
         self.config = config
+        self.cb = cb
         self.pv = PlacementView(
             display_controller=self,
             placement_controller=self.placement_controller,
@@ -53,5 +54,4 @@ class PlacerView(WidgetWrap):
         pass
 
     def done_cb(self):
-        log.debug("done_cb called")
-        EventLoop.exit(0)
+        self.cb()
