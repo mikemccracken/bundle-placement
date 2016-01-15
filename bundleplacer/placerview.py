@@ -27,7 +27,6 @@ log = logging.getLogger('bundleplacer')
 
 class PlacerUI(Frame):
     def __init__(self, placerview):
-        self.body = PlacerView
         super().__init__(body=placerview)
 
 
