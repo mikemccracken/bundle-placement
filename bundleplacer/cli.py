@@ -72,7 +72,10 @@ def main():
     placement_controller = PlacementController(config=config,
                                                maas_state=maas_state)
 
-    mainview = PlacerView(placement_controller, config)
+    def cb():
+        raise urwid.ExitMainLoop()
+
+    mainview = PlacerView(placement_controller, config, cb)
     ui = PlacerUI(mainview)
 
     def unhandled_input(key):
