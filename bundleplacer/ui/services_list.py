@@ -18,8 +18,8 @@ import logging
 from urwid import (AttrMap, Divider, Padding, Pile, Text,
                    WidgetWrap)
 
-from cloudinstall.maas import satisfies
-from cloudinstall.state import CharmState
+from bundleplacer.maas import satisfies
+from bundleplacer.state import CharmState
 from bundleplacer.ui.service_widget import ServiceWidget
 
 log = logging.getLogger('bundleplacer.ui')

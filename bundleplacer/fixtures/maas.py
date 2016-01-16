@@ -16,13 +16,8 @@
 import os
 import logging
 import json
-import sys
 
-# FIXME: Plan to make cloudinstall a non private library
-lib_dir = os.path.abspath('/usr/share/openstack')
-sys.path.insert(0, lib_dir)
-
-from cloudinstall.maas import MaasMachine
+from bundleplacer.maas import MaasMachine
 
 log = logging.getLogger('bundleplacer')
 

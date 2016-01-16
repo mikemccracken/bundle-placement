@@ -16,7 +16,7 @@
 import logging
 from urwid import (AttrMap, Divider, Padding, Pile, Text, WidgetWrap)
 
-from cloudinstall.maas import satisfies
+from bundleplacer.maas import satisfies
 
 from bundleplacer.ui.filter_box import FilterBox
 from bundleplacer.ui.machine_widget import MachineWidget

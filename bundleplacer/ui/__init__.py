@@ -28,7 +28,7 @@ from bundleplacer.ui.service_chooser import ServiceChooser
 from bundleplacer.ui.services_list import ServicesList
 from ubuntui.views import InfoDialogWidget
 from ubuntui.widgets import MetaScroll
-from cloudinstall.state import CharmState
+from bundleplacer.state import CharmState
 
 log = logging.getLogger('bundleplacer')
 

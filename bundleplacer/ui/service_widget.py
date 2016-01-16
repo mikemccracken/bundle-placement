@@ -17,8 +17,8 @@
 from urwid import (AttrMap, Button, GridFlow,
                    Padding, Pile, SelectableIcon, Text, WidgetWrap)
 
-from cloudinstall.utils import format_constraint
-from cloudinstall.state import CharmState
+from bundleplacer.utils import format_constraint
+from bundleplacer.state import CharmState
 
 
 class ServiceWidget(WidgetWrap):

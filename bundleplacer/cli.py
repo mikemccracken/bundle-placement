@@ -22,7 +22,7 @@ import urwid
 lib_dir = os.path.abspath('/usr/share/openstack')
 sys.path.insert(0, lib_dir)
 
-from cloudinstall.maas import connect_to_maas
+from bundleplacer.maas import connect_to_maas
 
 from bundleplacer.config import Config
 from bundleplacer.controller import PlacementController

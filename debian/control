@@ -15,8 +15,7 @@ Build-Depends: debhelper (>= 9),
                python3-urwid,
                python3-urwid-ubuntu,
                python3-yaml,
-               python3-jujuclient,
-               openstack
+               python3-jujuclient
 Standards-Version: 3.9.6
 Homepage: https://github.com/Ubuntu-Solutions-Engineering/bundle-placement
 X-Python3-Version: >= 3.4
@@ -34,7 +33,6 @@ Depends: gawk,
          python3-urwid-ubuntu,
          python3-yaml,
          python3-jujuclient,
-         openstack
          ${misc:Depends},
          ${python3:Depends},
          ${shlibs:Depends}

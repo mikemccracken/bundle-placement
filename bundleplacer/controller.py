@@ -20,8 +20,8 @@ import logging
 import yaml
 from multiprocessing import cpu_count
 
-from cloudinstall.maas import (satisfies, MaasMachineStatus)
-from cloudinstall.state import CharmState
+from bundleplacer.maas import (satisfies, MaasMachineStatus)
+from bundleplacer.state import CharmState
 
 from bundleplacer.assignmenttype import AssignmentType
 from bundleplacer.bundle import Bundle
