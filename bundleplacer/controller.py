@@ -497,7 +497,8 @@ class PlacementController:
            n_units > 0 and n_units < n_required:
             state = CharmState.REQUIRED
         elif state == CharmState.REQUIRED and n_units >= n_required:
-            state = CharmState.OPTIONAL
+            if n_required > 0:
+                state = CharmState.OPTIONAL
 
         return (state, list(conflicting), list(depending))
 
