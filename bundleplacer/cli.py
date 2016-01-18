@@ -25,7 +25,7 @@ sys.path.insert(0, lib_dir)
 from cloudinstall.maas import connect_to_maas
 
 from bundleplacer.config import Config
-from bundleplacer.controller import PlacementController
+from bundleplacer.controller import BundleWriter, PlacementController
 from bundleplacer.log import setup_logger
 from bundleplacer.placerview import PlacerView, PlacerUI
 from bundleplacer.fixtures.maas import FakeMaasState
@@ -73,6 +73,8 @@ def main():
                                                maas_state=maas_state)
 
     def cb():
+        bw = BundleWriter(placement_controller)
+        bw.write_bundle("out-bundle.yaml")
         raise urwid.ExitMainLoop()
 
     mainview = PlacerView(placement_controller, config, cb)
