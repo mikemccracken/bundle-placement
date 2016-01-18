@@ -30,7 +30,8 @@ class CharmStoreAPI:
 
     def __init__(self):
         if not CharmStoreAPI._charmstore:
-            CharmStoreAPI._charmstore = CharmStore('https://api.jujucharms.com/v4')
+            csurl = 'https://api.jujucharms.com/v4'
+            CharmStoreAPI._charmstore = CharmStore(csurl)
 
     @classmethod
     @lru_cache(maxsize=128)
