@@ -47,6 +47,7 @@ def parse_options(argv):
                         "on services in bundle")
     parser.add_argument("--maas-ip", dest="maas_ip", default=None)
     parser.add_argument("--maas-cred", dest="maas_cred", default=None)
+    parser.add_argument("-o", dest="out_filename", default=None)
     return parser.parse_args(argv)
 
 
@@ -74,7 +75,12 @@ def main():
 
     def cb():
         bw = BundleWriter(placement_controller)
-        bw.write_bundle("out-bundle.yaml")
+        if opts.out_filename:
+            outfn = opts.out_filename
+        else:
+            path, ext = os.path.splitext(opts.bundle_filename)
+            outfn = "{}-out{}".format(path, ext)
+        bw.write_bundle(outfn)
         raise urwid.ExitMainLoop()
 
     mainview = PlacerView(placement_controller, config, cb)
