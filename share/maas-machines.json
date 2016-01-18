@@ -7,7 +7,7 @@
                 "mac_address": "00:16:3e:f5:c8:3c"
             }
         ], 
-        "hostname": "juju-bootstrap.maas", 
+        "hostname": "node-zero.maas", 
         "zone": {
             "resource_uri": "/MAAS/api/1.0/zones/default/", 
             "name": "default", 
@@ -23,12 +23,13 @@
         "memory": 0, 
         "power_type": "virsh", 
         "tag_names": [
+            "node-zero",
             "use-fastpath-installer"
         ], 
         "ip_addresses": [
             "10.0.100.3"
         ], 
-        "resource_uri": "/MAAS/api/1.0/nodes/node-6e99d892-1f2d-11e4-ba2f-eca86bfb9aa4/"
+        "resource_uri": "/MAAS/api/1.0/nodes/node-zero/"
     },
     {
         "status": 4, 
@@ -54,11 +55,12 @@
         "memory": 20480, 
         "power_type": "amt", 
         "tag_names": [
+            "node-one",
             "use-fastpath-installer", 
             "node-d66a310e-1f43-11e4-ba2f-eca86bfb9aa4"
         ], 
         "ip_addresses": [], 
-        "resource_uri": "/MAAS/api/1.0/nodes/node-d66a310e-1f43-11e4-ba2f-eca86bfb9aa4/"
+        "resource_uri": "/MAAS/api/1.0/nodes/node-one/"
     },
     {
         "status": 4, 
