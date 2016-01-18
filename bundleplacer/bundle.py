@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from functools import lru_cache
 import logging
 from theblues.charmstore import CharmStore
 import yaml
@@ -20,9 +21,8 @@ import yaml
 from bundleplacer.charm import Charm
 from bundleplacer.assignmenttype import AssignmentType, label_to_atype
 
-log = logging.getLogger('bundleplacer')
 
-from functools import lru_cache
+log = logging.getLogger('bundleplacer')
 
 
 class CharmStoreAPI:
