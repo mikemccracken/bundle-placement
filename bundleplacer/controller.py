@@ -706,6 +706,17 @@ class BundleWriter:
         cstr = "tags={}".format(mid)
         return {"constraints": cstr}
 
+    def _get_used_relations(self, services):
+        relations = []
+        service_names = [s.charm_name for s in services]
+        for svc in services:
+            for src, dst in svc.relations:
+                src_charm = src.split(":")[0]
+                dst_charm = dst.split(":")[0]
+                if src_charm in service_names and dst_charm in service_names:
+                    relations.append([src, dst])
+        return relations
+
     def write_bundle(self, filename):
         bundle = {}
         services = []
@@ -723,19 +734,17 @@ class BundleWriter:
                 machines.append({machine_id: self._dict_for_machine(iid)})
 
         for iid, d in self.controller.assignments.items():
-            machine_services = []
             for atype, svcs in d.items():
                 if len(svcs) < 1:
                     continue
                 for svc in svcs:
                     sd = self._dict_for_service(svc, atype,
                                                 iid_map.get(iid, None))
-                    machine_services.append({svc.charm_name: sd})
-
-            services += machine_services
+                    services.append((svc, {svc.charm_name: sd}))
 
         bundle['machines'] = machines
-        bundle['services'] = services
-        # TODO relations
+        bundle['services'] = [s for _, s in services]
+        bundle['relations'] = self._get_used_relations([s for
+                                                        s, _ in services])
         with open(filename, 'w') as f:
             yaml.dump(bundle, f, default_flow_style=False)

@@ -18,7 +18,7 @@ class Charm:
     def __init__(self, charm_name, charm_source, display_name,
                  summary, constraints, depends, conflicts,
                  allowed_assignment_types, num_units, options,
-                 allow_multi_units, subordinate, required):
+                 allow_multi_units, subordinate, required, relations):
         self.charm_name = charm_name
         self.charm_source = charm_source
         self.display_name = display_name
@@ -32,7 +32,8 @@ class Charm:
         self.allow_multi_units = allow_multi_units
         self.subordinate = subordinate
         self.is_core = required
-        self.isolate = True
+        self.isolate = True if not subordinate else False
+        self.relations = relations
 
     def required_num_units(self):
         return self.num_units

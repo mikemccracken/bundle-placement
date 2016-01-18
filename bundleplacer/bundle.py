@@ -40,7 +40,7 @@ class CharmStoreAPI:
         return entity
 
 
-def create_charm_class(servicename, service_dict, servicemeta):
+def create_charm_class(servicename, service_dict, servicemeta, relations):
     # some attempts to guess at subordinate status from bundle format,
     # to avoid having to include it in metadata:
 
@@ -58,6 +58,12 @@ def create_charm_class(servicename, service_dict, servicemeta):
                                     entity['Meta']['charm-metadata']['Name'])
     summary = entity['Meta']['charm-metadata']['Summary']
 
+    myrelations = []
+    for src, dst in relations:
+        log.debug("in create_charm_class, src,dst = {}, {}".format(src, dst))
+        if src.startswith(servicename) or dst.startswith(servicename):
+            myrelations.append((src, dst))
+
     charm = Charm(charm_name=servicename,
                   charm_source=service_dict['charm'],
                   display_name=servicemeta.get('display-name', display_name),
@@ -72,7 +78,8 @@ def create_charm_class(servicename, service_dict, servicemeta):
                   options=service_dict.get('options', {}),
                   allow_multi_units=servicemeta.get('allow_multi_units', True),
                   subordinate=is_subordinate,
-                  required=servicemeta.get('required', True))
+                  required=servicemeta.get('required', True),
+                  relations=myrelations)
 
     # Make sure to map any strings to an assignment type enum
     if any(isinstance(atype, str) for atype in charm.allowed_assignment_types):
@@ -100,7 +107,9 @@ class Bundle:
         charm_classes = []
         metadata = self._metadata.get('services', {})
         services = self._bundle.get('services', {})
+        relations = self._bundle.get('relations', [])
         for servicename, sd in services.items():
             sm = metadata.get(servicename, {})
-            charm_classes.append(create_charm_class(servicename, sd, sm))
+            charm_classes.append(create_charm_class(servicename, sd,
+                                                    sm, relations))
         return charm_classes
