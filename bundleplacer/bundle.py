@@ -54,7 +54,8 @@ def create_charm_class(servicename, service_dict, servicemeta):
     charm_name = service_dict['charm'].split('/')[-1]
     charm_name = '-'.join(charm_name.split('-')[:-1])
     entity = CharmStoreAPI().lookup_charm(charm_name)
-    display_name = "{} ({})".format(servicename, entity['Meta']['charm-metadata']['Name'])
+    display_name = "{} ({})".format(servicename,
+                                    entity['Meta']['charm-metadata']['Name'])
     summary = entity['Meta']['charm-metadata']['Summary']
 
     charm = Charm(charm_name=servicename,
