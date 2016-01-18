@@ -59,6 +59,7 @@ def create_charm_class(servicename, service_dict, servicemeta):
     summary = entity['Meta']['charm-metadata']['Summary']
 
     charm = Charm(charm_name=servicename,
+                  charm_source=service_dict['charm'],
                   display_name=servicemeta.get('display-name', display_name),
                   summary=servicemeta.get('summary', summary),
                   constraints=servicemeta.get('constraints', {}),
@@ -68,6 +69,7 @@ def create_charm_class(servicename, service_dict, servicemeta):
                       'allowed_assignment_types',
                       list(AssignmentType)),
                   num_units=service_dict.get('num_units', 1),
+                  options=service_dict.get('options', {}),
                   allow_multi_units=servicemeta.get('allow_multi_units', True),
                   subordinate=is_subordinate,
                   required=servicemeta.get('required', True))
@@ -85,8 +87,13 @@ class Bundle:
         self.metadatafilename = metadatafilename
         with open(self.filename) as f:
             self._bundle = yaml.load(f)
-        with open(self.metadatafilename) as f:
-            self._metadata = yaml.load(f)
+        if metadatafilename:
+            with open(self.metadatafilename) as f:
+                self._metadata = yaml.load(f)
+        else:
+            self._metadata = {}
+        if 'services' not in self._bundle.keys():
+            raise Exception("Invalid Bundle.")
 
     @property
     def charm_classes(self):
