@@ -25,7 +25,7 @@ sys.path.insert(0, lib_dir)
 from bundleplacer.maas import connect_to_maas
 
 from bundleplacer.config import Config
-from bundleplacer.controller import PlacementController
+from bundleplacer.controller import BundleWriter, PlacementController
 from bundleplacer.log import setup_logger
 from bundleplacer.placerview import PlacerView, PlacerUI
 from bundleplacer.fixtures.maas import FakeMaasState
@@ -47,6 +47,7 @@ def parse_options(argv):
                         "on services in bundle")
     parser.add_argument("--maas-ip", dest="maas_ip", default=None)
     parser.add_argument("--maas-cred", dest="maas_cred", default=None)
+    parser.add_argument("-o", dest="out_filename", default=None)
     return parser.parse_args(argv)
 
 
@@ -73,6 +74,13 @@ def main():
                                                maas_state=maas_state)
 
     def cb():
+        bw = BundleWriter(placement_controller)
+        if opts.out_filename:
+            outfn = opts.out_filename
+        else:
+            path, ext = os.path.splitext(opts.bundle_filename)
+            outfn = "{}-out{}".format(path, ext)
+        bw.write_bundle(outfn)
         raise urwid.ExitMainLoop()
 
     mainview = PlacerView(placement_controller, config, cb)

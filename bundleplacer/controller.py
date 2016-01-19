@@ -497,7 +497,8 @@ class PlacementController:
            n_units > 0 and n_units < n_required:
             state = CharmState.REQUIRED
         elif state == CharmState.REQUIRED and n_units >= n_required:
-            state = CharmState.OPTIONAL
+            if n_required > 0:
+                state = CharmState.OPTIONAL
 
         return (state, list(conflicting), list(depending))
 
@@ -682,3 +683,68 @@ class PlacementController:
         import pprint
         log.debug("gen_single() = '{}'".format(pprint.pformat(assignments)))
         return assignments
+
+
+class BundleWriter:
+    def __init__(self, controller):
+        self.controller = controller
+
+    def _dict_for_service(self, svc, atype, to):
+
+        d = dict(charm=svc.charm_source,
+                 num_units=1,
+                 options=svc.options)
+        if to is not None:
+            prefix = {AssignmentType.DEFAULT: "",
+                      AssignmentType.BareMetal: "",
+                      AssignmentType.KVM: "kvm:",
+                      AssignmentType.LXC: "lxc:"}[atype]
+            d['to'] = "{}{}".format(prefix, to)
+        return d
+
+    def _dict_for_machine(self, mid):
+        cstr = "tags={}".format(mid)
+        return {"constraints": cstr}
+
+    def _get_used_relations(self, services):
+        relations = []
+        service_names = [s.charm_name for s in services]
+        for svc in services:
+            for src, dst in svc.relations:
+                src_charm = src.split(":")[0]
+                dst_charm = dst.split(":")[0]
+                if src_charm in service_names and dst_charm in service_names:
+                    relations.append([src, dst])
+        return relations
+
+    def write_bundle(self, filename):
+        bundle = {}
+        services = []
+        machines = []
+        iid_map = {}            # maps iid to juju machine number
+
+        # get a machine dict for every machine with at least one
+        # service
+        for iid, d in self.controller.assignments.items():
+            if sum([len(svcs) for svcs in d.values()]) == 0:
+                continue
+            if iid not in ["_subordinates", "_default"]:
+                machine_id = len(machines)
+                iid_map[iid] = machine_id
+                machines.append({machine_id: self._dict_for_machine(iid)})
+
+        for iid, d in self.controller.assignments.items():
+            for atype, svcs in d.items():
+                if len(svcs) < 1:
+                    continue
+                for svc in svcs:
+                    sd = self._dict_for_service(svc, atype,
+                                                iid_map.get(iid, None))
+                    services.append((svc, {svc.charm_name: sd}))
+
+        bundle['machines'] = machines
+        bundle['services'] = [s for _, s in services]
+        bundle['relations'] = self._get_used_relations([s for
+                                                        s, _ in services])
+        with open(filename, 'w') as f:
+            yaml.dump(bundle, f, default_flow_style=False)
