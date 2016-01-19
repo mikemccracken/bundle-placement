@@ -719,8 +719,9 @@ class BundleWriter:
 
     def write_bundle(self, filename):
         bundle = {}
-        services = []
-        machines = []
+        services = {}
+        servicenames = []
+        machines = {}
         iid_map = {}            # maps iid to juju machine number
 
         # get a machine dict for every machine with at least one
@@ -731,7 +732,7 @@ class BundleWriter:
             if iid not in ["_subordinates", "_default"]:
                 machine_id = len(machines)
                 iid_map[iid] = machine_id
-                machines.append({machine_id: self._dict_for_machine(iid)})
+                machines[machine_id] = self._dict_for_machine(iid)
 
         for iid, d in self.controller.assignments.items():
             for atype, svcs in d.items():
@@ -740,11 +741,15 @@ class BundleWriter:
                 for svc in svcs:
                     sd = self._dict_for_service(svc, atype,
                                                 iid_map.get(iid, None))
-                    services.append((svc, {svc.charm_name: sd}))
+                    services[svc.charm_name] = sd
+                    servicenames.append(svc)
 
         bundle['machines'] = machines
-        bundle['services'] = [s for _, s in services]
-        bundle['relations'] = self._get_used_relations([s for
-                                                        s, _ in services])
+        bundle['services'] = services
+        bundle['relations'] = self._get_used_relations(servicenames)
+
+        for k, v in self.controller.bundle.extra_items().items():
+            bundle[k] = v
+
         with open(filename, 'w') as f:
             yaml.dump(bundle, f, default_flow_style=False)
