@@ -113,3 +113,7 @@ class Bundle:
             charm_classes.append(create_charm_class(servicename, sd,
                                                     sm, relations))
         return charm_classes
+
+    def extra_items(self):
+        return {k: v for k, v in self._bundle.items()
+                if k not in ['services', 'machines', 'relations']}
