@@ -8,14 +8,14 @@ Build-Depends: debhelper (>= 9),
                pyflakes,
                python3-all,
                python3-jinja2,
+               python3-jujuclient,
                python3-nose,
                python3-requests,
                python3-setuptools,
                python3-theblues,
                python3-urwid,
                python3-urwid-ubuntu,
-               python3-yaml,
-               python3-jujuclient
+               python3-yaml
 Standards-Version: 3.9.6
 Homepage: https://github.com/Ubuntu-Solutions-Engineering/bundle-placement
 X-Python3-Version: >= 3.4
@@ -27,12 +27,12 @@ Architecture: all
 Depends: gawk,
          juju-core,
          python3-jinja2,
+         python3-jujuclient,
          python3-requests,
          python3-theblues,
          python3-urwid,
          python3-urwid-ubuntu,
          python3-yaml,
-         python3-jujuclient,
          ${misc:Depends},
          ${python3:Depends},
          ${shlibs:Depends}

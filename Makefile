@@ -26,7 +26,7 @@ deb-src: clean update_version
 deb-release:
 	@dpkg-buildpackage -S -sd $(DPKGBUILDARGS)
 
-deb: clean update_version man-pages
+deb: clean update_version #man-pages
 	@dpkg-buildpackage -b $(DPKGBUILDARGS)
 
 #man-pages:
@@ -49,7 +49,7 @@ git_rev:
 
 update_version: git-sync-requirements
 	wrap-and-sort
-	@sed -i -r "s/(^__version__\s=\s)(.*)/\1\"$(VERSION)\"/" cloudinstall/__init__.py
+	@sed -i -r "s/(^__version__\s=\s)(.*)/\1\"$(VERSION)\"/" bundleplacer/__init__.py
 
 .PHONY: ci-test pyflakes pep8 test travis-test
 ci-test: pyflakes pep8 travis-test
