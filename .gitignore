@@ -4,6 +4,11 @@
 .tox
 .pybuild
 *.egg-info
+*.egg-link
+bundle-placer
+*.pth
+maasclient
+site.py
 debian/bundle-placer*.log
 debian/bundle-placer*.debhelper
 debian/bundle-placer*.substvars
