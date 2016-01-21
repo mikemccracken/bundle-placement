@@ -60,7 +60,6 @@ def create_charm_class(servicename, service_dict, servicemeta, relations):
 
     myrelations = []
     for src, dst in relations:
-        log.debug("in create_charm_class, src,dst = {}, {}".format(src, dst))
         if src.startswith(servicename) or dst.startswith(servicename):
             myrelations.append((src, dst))
 

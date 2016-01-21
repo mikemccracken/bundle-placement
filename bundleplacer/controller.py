@@ -497,7 +497,7 @@ class PlacementController:
            n_units > 0 and n_units < n_required:
             state = CharmState.REQUIRED
         elif state == CharmState.REQUIRED and n_units >= n_required:
-            if n_required > 0:
+            if n_units > 0:
                 state = CharmState.OPTIONAL
 
         return (state, list(conflicting), list(depending))
@@ -550,6 +550,7 @@ class PlacementController:
 
         self.update_and_save()
 
+        unassigned_services = list(self.unassigned_undeployed_services())
         unassigned_reqs = [c for c in unassigned_services if
                            self.get_charm_state(c)[0] == CharmState.REQUIRED]
 
