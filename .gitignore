@@ -7,7 +7,6 @@
 *.egg-link
 bundle-placer
 *.pth
-maasclient
 site.py
 debian/bundle-placer*.log
 debian/bundle-placer*.debhelper
