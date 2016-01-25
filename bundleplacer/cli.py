@@ -19,6 +19,7 @@ import os
 import sys
 import urwid
 
+from bundleplacer import async
 from bundleplacer.maas import connect_to_maas
 
 from bundleplacer.config import Config
@@ -78,6 +79,7 @@ def main():
             path, ext = os.path.splitext(opts.bundle_filename)
             outfn = "{}-out{}".format(path, ext)
         bw.write_bundle(outfn)
+        async.shutdown()
         raise urwid.ExitMainLoop()
 
     mainview = PlacerView(placement_controller, config, cb)
@@ -85,6 +87,7 @@ def main():
 
     def unhandled_input(key):
         if key in ['q', 'Q']:
+            async.shutdown()
             raise urwid.ExitMainLoop()
     EventLoop.build_loop(ui, STYLES, unhandled_input=unhandled_input)
     mainview.loop = EventLoop.loop

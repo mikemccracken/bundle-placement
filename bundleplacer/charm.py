@@ -15,14 +15,14 @@
 
 
 class Charm:
-    def __init__(self, charm_name, charm_source, display_name,
-                 summary, constraints, depends, conflicts,
+    def __init__(self, charm_name, charm_source, summary_future,
+                 constraints, depends, conflicts,
                  allowed_assignment_types, num_units, options,
                  allow_multi_units, subordinate, required, relations):
         self.charm_name = charm_name
         self.charm_source = charm_source
-        self.display_name = display_name
-        self.summary = summary
+        self.summary_future = summary_future
+        self._summary = "Loading summary…"
         self.constraints = constraints
         self.depends = depends
         self.conflicts = conflicts
@@ -34,6 +34,17 @@ class Charm:
         self.is_core = required
         self.isolate = True if not subordinate else False
         self.relations = relations
+
+    @property
+    def summary(self):
+        if self.summary_future.done():
+            self._summary = self.summary_future.result()
+        return self._summary
+
+    @property
+    def display_name(self):
+        return "{} ({})".format(self.charm_name,
+                                self.charm_source)
 
     def required_num_units(self):
         return self.num_units
