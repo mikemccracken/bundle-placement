@@ -16,16 +16,20 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from bundleplacer.machine import Machine
-from bundleplacer.utils import human_to_mb
-from maasclient.auth import MaasAuth
-from maasclient import MaasClient
 from collections import Counter
 from enum import Enum
 import json
 import logging
 import os
+from threading import RLock
 import time
+
+from maasclient.auth import MaasAuth
+from maasclient import MaasClient
+
+from bundleplacer.async import submit
+from bundleplacer.machine import Machine
+from bundleplacer.utils import human_to_mb
 
 
 log = logging.getLogger('bundleplacer')
@@ -293,41 +297,58 @@ class MaasState:
 
     def __init__(self, maas_client):
         self.maas_client = maas_client
-        self._maas_client_nodes = None
-        self.start_time = time.time()
+        self._maas_client_nodes = []
+        self._filtered_nodes = []
+        self._nodes_lock = RLock()
+        self._nodes_future = None
+        self._start_time = 0
 
     def nodes(self, constraints=None):
         """ Cache MAAS nodes
         """
-        elapsed_time = time.time() - self.start_time
-        if not self._maas_client_nodes or elapsed_time > 20:
-            self._maas_client_nodes = self.maas_client.nodes
-            self._filtered_nodes = self._maas_client_nodes
-            if constraints:
-                cd = dict(x.split('=') for x in constraints.split(' '))
-                arch = cd.get('arch', None)
-                tagstr = cd.get('tags', None)
-                satisfying_nodes = []
-                for n in self._maas_client_nodes:
-                    if arch:
-                        n_arch = n['architecture'].split('/')[0]
-                        if n_arch != arch:
-                            continue
-                    if tagstr:
-                        c_tags = set(cd['tags'].split(','))
-                        n_tags = set(n['tag_names'])
-                        if not c_tags.issubset(n_tags):
-                            continue
-                    satisfying_nodes.append(n)
+        elapsed_time = time.time() - self._start_time
+        if elapsed_time <= 20:
+            return self._filtered_nodes
 
-                self._filtered_nodes = satisfying_nodes
+        def _do_update():
+            nodes = self.maas_client.nodes
+            self.invalidate_nodes_cache()
+            return nodes
 
-            self.start_time = time.time()
+        if self._nodes_future:
+            if self._nodes_future.done():
+                with self._nodes_lock:
+                    self._maas_client_nodes = self._nodes_future.result()
+                self._nodes_future = None
+        else:
+            self._nodes_future = submit(_do_update, lambda _: None)
+
+        self._filtered_nodes = self._maas_client_nodes
+        if constraints:
+            cd = dict(x.split('=') for x in constraints.split(' '))
+            arch = cd.get('arch', None)
+            tagstr = cd.get('tags', None)
+            satisfying_nodes = []
+            for n in self._maas_client_nodes:
+                if arch:
+                    n_arch = n['architecture'].split('/')[0]
+                    if n_arch != arch:
+                        continue
+                if tagstr:
+                    c_tags = set(cd['tags'].split(','))
+                    n_tags = set(n['tag_names'])
+                    if not c_tags.issubset(n_tags):
+                        continue
+                satisfying_nodes.append(n)
+
+            self._filtered_nodes = satisfying_nodes
+
+        self._start_time = time.time()
         return self._filtered_nodes
 
     def invalidate_nodes_cache(self):
         """Force reload on next access"""
-        self._maas_client_nodes = None
+        self._start_time = 0
 
     def machine(self, instance_id):
         """ Return single machine state
