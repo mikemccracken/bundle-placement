@@ -62,12 +62,15 @@ class ServiceWidget(WidgetWrap):
     def selectable(self):
         return True
 
-    def build_widgets(self):
+    def update_title_markup(self):
         dn = self.charm_class.display_name
         self.title_markup = ["\N{GEAR} {}".format(dn), ""]
-        if self.charm_class.summary != "":
-            self.title_markup.append("\n {}\n".format(self.charm_class.summary))
+        summary = self.charm_class.summary
+        if summary != "":
+            self.title_markup.append("\n {}\n".format(summary))
 
+    def build_widgets(self):
+        self.update_title_markup()
         self.charm_info_widget = Text(self.title_markup)
         self.placements_widget = Text("")
 
@@ -99,6 +102,8 @@ class ServiceWidget(WidgetWrap):
     def update(self):
         mstr = [""]
 
+        self.update_title_markup()
+
         state, cons, deps = self.controller.get_charm_state(self.charm_class)
 
         if state == CharmState.REQUIRED:
@@ -117,16 +122,12 @@ class ServiceWidget(WidgetWrap):
                 info_str += " - required by {}".format(dep_str)
 
             self.title_markup[1] = ('info', info_str)
-            self.charm_info_widget.set_text(self.title_markup)
-
         elif state == CharmState.CONFLICTED:
             con_str = ", ".join([c.display_name for c in cons])
             self.title_markup[1] = ('error_icon',
                                     ' - Conflicts with {}'.format(con_str))
-            self.charm_info_widget.set_text(self.title_markup)
         elif state == CharmState.OPTIONAL:
             self.title_markup[1] = ""
-            self.charm_info_widget.set_text(self.title_markup)
 
         def string_for_placement_dict(d):
             s = []
@@ -148,6 +149,7 @@ class ServiceWidget(WidgetWrap):
         mstr += ["\n    ", ('label', "Deployments: ")]
         mstr += string_for_placement_dict(dd)
 
+        self.charm_info_widget.set_text(self.title_markup)
         self.placements_widget.set_text(mstr)
 
         self.update_buttons()

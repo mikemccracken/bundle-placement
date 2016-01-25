@@ -13,11 +13,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from functools import lru_cache
+from concurrent.futures import Future
+from functools import partial
 import logging
 from theblues.charmstore import CharmStore
+from threading import RLock
 import yaml
 
+from bundleplacer.async import submit
 from bundleplacer.charm import Charm
 from bundleplacer.assignmenttype import AssignmentType, label_to_atype
 
@@ -27,17 +30,46 @@ log = logging.getLogger('bundleplacer')
 
 class CharmStoreAPI:
     _charmstore = None
+    _cache = {}
+    _cachelock = RLock()
 
     def __init__(self):
         if not CharmStoreAPI._charmstore:
             csurl = 'https://api.jujucharms.com/v4'
             CharmStoreAPI._charmstore = CharmStore(csurl)
 
-    @classmethod
-    @lru_cache(maxsize=128)
-    def lookup_charm(self, charm_name):
+    def do_remote_lookup(self, charm_name, metakey):
         entity = CharmStoreAPI._charmstore.entity(charm_name)
+        with CharmStoreAPI._cachelock:
+            CharmStoreAPI._cache[charm_name] = entity
         return entity
+
+    def wait_for_pending_lookup(self, f, charm_name, metakey):
+        entity = f.result()
+        return entity['Meta']['charm-metadata'][metakey]
+
+    def _lookup(self, charm_name, metakey):
+        with CharmStoreAPI._cachelock:
+            if charm_name in CharmStoreAPI._cache:
+                val = CharmStoreAPI._cache[charm_name]
+                if isinstance(val, Future):
+                    f = submit(partial(self.wait_for_pending_lookup,
+                                       val, charm_name, metakey),
+                               lambda _: None)
+                else:
+                    d = val['Meta']['charm-metadata'][metakey]
+                    f = submit(lambda: d, lambda _: None)
+            else:
+                f = submit(partial(self.do_remote_lookup,
+                                   charm_name,
+                                   metakey),
+                           lambda _: None)
+                CharmStoreAPI._cache[charm_name] = f
+
+        return f
+
+    def get_summary(self, charm_name):
+        return self._lookup(charm_name, 'Summary')
 
 
 def create_charm_class(servicename, service_dict, servicemeta, relations):
@@ -53,10 +85,7 @@ def create_charm_class(servicename, service_dict, servicemeta, relations):
 
     charm_name = service_dict['charm'].split('/')[-1]
     charm_name = '-'.join(charm_name.split('-')[:-1])
-    entity = CharmStoreAPI().lookup_charm(charm_name)
-    display_name = "{} ({})".format(servicename,
-                                    entity['Meta']['charm-metadata']['Name'])
-    summary = entity['Meta']['charm-metadata']['Summary']
+    api = CharmStoreAPI()
 
     myrelations = []
     for src, dst in relations:
@@ -65,8 +94,7 @@ def create_charm_class(servicename, service_dict, servicemeta, relations):
 
     charm = Charm(charm_name=servicename,
                   charm_source=service_dict['charm'],
-                  display_name=servicemeta.get('display-name', display_name),
-                  summary=servicemeta.get('summary', summary),
+                  summary_future=api.get_summary(charm_name),
                   constraints=servicemeta.get('constraints', {}),
                   depends=servicemeta.get('depends', []),
                   conflicts=servicemeta.get('conflicts', []),
