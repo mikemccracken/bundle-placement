@@ -142,6 +142,8 @@ class MachinesList(WidgetWrap):
         self.filter_edit_box.set_info(len(self.machine_widgets),
                                       n_satisfying_machines)
 
+        self.sort_machine_widgets()
+
     def add_machine_widget(self, machine):
         mw = MachineWidget(machine, self.controller, self.actions,
                            self.show_hardware, self.show_assignments)
@@ -169,3 +171,22 @@ class MachinesList(WidgetWrap):
         c = self.machine_pile.contents[:mw_idx] + \
             self.machine_pile.contents[mw_idx + 2:]
         self.machine_pile.contents = c
+
+    def sort_machine_widgets(self):
+        def keyfunc(mw):
+            m = mw.machine
+            hwinfo = " ".join(map(str, [m.arch, m.cpu_cores, m.mem, m.storage]))
+            if str(mw.machine.status) == 'ready':
+                skey = 'A'
+            else:
+                skey = str(mw.machine.status)
+            return skey + mw.machine.hostname + hwinfo
+        self.machine_widgets.sort(key=keyfunc)
+
+        def wrappedkeyfunc(t):
+            mw, options = t
+            if not isinstance(mw, MachineWidget):
+                return 'A'
+            return keyfunc(mw)
+
+        self.machine_pile.contents.sort(key=wrappedkeyfunc)
