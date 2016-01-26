@@ -66,22 +66,14 @@ class ServicesColumn(WidgetWrap):
                     self.placement_view.do_show_machine_chooser)]
         subordinate_actions = [(not_conflicted_p, "Add",
                                 self.do_place_subordinate)]
-        self.required_services_list = ServicesList(self.placement_controller,
-                                                   actions,
-                                                   subordinate_actions,
-                                                   ignore_assigned=True,
-                                                   ignore_deployed=True,
-                                                   show_type='required',
-                                                   show_constraints=True,
-                                                   title="Required Services")
-        self.additional_services_list = ServicesList(self.placement_controller,
-                                                     actions,
-                                                     subordinate_actions,
-                                                     ignore_assigned=True,
-                                                     show_type='non-required',
-                                                     show_constraints=True,
-                                                     title="Additional "
-                                                     "Services")
+        self.services_list = ServicesList(self.placement_controller,
+                                          actions,
+                                          subordinate_actions,
+                                          ignore_assigned=True,
+                                          ignore_deployed=True,
+                                          show_type='all',
+                                          show_constraints=True,
+                                          title="Services to Place")
 
         autoplace_func = self.placement_view.do_autoplace
         self.autoplace_button = AttrMap(Button("Auto-place Remaining Services",
@@ -95,10 +87,7 @@ class ServicesColumn(WidgetWrap):
                                         'button_secondary',
                                         'button_secondary focus')
 
-        self.required_services_pile = Pile([self.required_services_list,
-                                            Divider()])
-        self.additional_services_pile = Pile([self.additional_services_list,
-                                              Divider()])
+        self.services_pile = Pile([self.services_list, Divider()])
 
         self.top_buttons = []
         self.top_button_grid = GridFlow(self.top_buttons,
@@ -109,8 +98,7 @@ class ServicesColumn(WidgetWrap):
             Divider(),
             self.top_button_grid, Divider(),
             self.deploy_view, Divider(),
-            self.required_services_pile, Divider(),
-            self.additional_services_pile
+            self.services_pile, Divider(),
         ]
 
         self.main_pile = Pile(pl)
@@ -119,8 +107,7 @@ class ServicesColumn(WidgetWrap):
 
     def update(self):
         self.deploy_view.update()
-        self.required_services_list.update()
-        self.additional_services_list.update()
+        self.services_list.update()
 
         top_buttons = []
         unplaced = self.placement_controller.unassigned_undeployed_services()
@@ -228,9 +215,6 @@ class MachinesColumn(WidgetWrap):
                      pc.assignments_for_machine(m).items()])
             return n > 0
 
-        clear_machine_func = self.placement_view.do_clear_machine
-        show_chooser_func = self.placement_view.do_show_service_chooser
-
         self.open_maas_button = AttrMap(Button("Open in Browser",
                                                on_press=self.browse_maas),
                                         'button_secondary',
@@ -244,13 +228,9 @@ class MachinesColumn(WidgetWrap):
                               width=BUTTON_SIZE, right=2)])
 
         self.machines_list = MachinesList(self.placement_controller,
-                                          [(has_services_p,
-                                            'Clear All Services',
-                                            clear_machine_func),
-                                           (has_services_p,
-                                            'Remove Some Services',
-                                            show_chooser_func)],
+                                          [],
                                           show_hardware=True,
+                                          show_assignments=False,
                                           title_widgets=tw)
         self.machines_list.update()
 
@@ -312,6 +292,66 @@ class MachinesColumn(WidgetWrap):
         self.placement_view.show_overlay(w)
 
 
+class ActionsColumn(WidgetWrap):
+
+    """Displays dynamic list of unplaced services and associated controls
+    """
+
+    def __init__(self, display_controller, placement_controller,
+                 placement_view):
+        self.display_controller = display_controller
+        self.placement_controller = placement_controller
+        self.placement_view = placement_view
+        w = self.build_widgets()
+        super().__init__(w)
+        self.update()
+
+    def selectable(self):
+        return True
+
+    def build_widgets(self):
+
+        pl = [
+            Text(("body", "Container Type"), align='center'),
+            Divider(),
+            Text("Nothing selected")
+        ]
+
+        self.main_pile = Pile(pl)
+
+        return self.main_pile
+
+    def update(self):
+        all_actions = [(AssignmentType.BareMetal,
+                        'Add as Bare Metal',
+                        self.do_select_baremetal),
+                       (AssignmentType.LXC,
+                        'Add as LXC', self.do_select_lxc),
+                       (AssignmentType.KVM,
+                        'Add as KVM', self.do_select_kvm)]
+        # selected_charm_class = self.placement_view.selected_charm_class
+        # allowed_types = selected_charm_class.allowed_assignment_types
+        self.action_buttons = [AttrMap(Button(label, on_press=func),
+                                       'button_secondary',
+                                       'button_secondary focus')
+                               for atype, label, func in all_actions]
+        # TEMP ---                                if atype in allowed_types]
+
+        # self.button_grid = GridFlow(self.action_buttons,
+        #                             36, 1, 0, 'center')
+        self.main_pile.contents[2] = (Pile(self.action_buttons),
+                                      self.main_pile.options())
+    
+    def do_select_baremetal(self, sender):
+        pass
+
+    def do_select_lxc(self, sender):
+        pass
+
+    def do_select_kvm(self, sender):
+        pass
+
+
 class PlacementView(WidgetWrap):
 
     """
@@ -348,8 +388,13 @@ class PlacementView(WidgetWrap):
                                               self.placement_controller,
                                               self)
 
+        self.actions_column = ActionsColumn(self.display_controller,
+                                            self.placement_controller,
+                                            self)
+        
         self.columns = Columns([self.services_column,
-                                self.machines_column])
+                                self.machines_column,
+                                self.actions_column])
         self.main_pile = Pile([Padding(self.columns,
                                        align='center',
                                        width=('relative', 95))])
