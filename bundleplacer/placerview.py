@@ -35,6 +35,8 @@ class PlacerView(WidgetWrap):
         self.placement_controller = placement_controller
         self.config = config
         self.cb = cb
+        self._selected_machines = set()
+        self._selected_charms = set()
         self.pv = PlacementView(
             display_controller=self,
             placement_controller=self.placement_controller,
@@ -54,3 +56,27 @@ class PlacerView(WidgetWrap):
 
     def done_cb(self):
         self.cb()
+
+    def do_toggle_selected_machine(self, machinewidget):
+        m = machinewidget.machine
+        if m in self._selected_machines:
+            self._selected_machines.remove(m)
+        else:
+            self._selected_machines.add(m)
+
+    @property
+    def selected_machines(self):
+        return list(self._selected_machines)
+
+    def do_toggle_selected_charm(self, servicewidget):
+        charm_class = servicewidget.charm_class
+        if charm_class in self._selected_charms:
+            self._selected_charms.remove(charm_class)
+        else:
+            self._selected_charms.add(charm_class)
+
+    @property
+    def selected_charms(self):
+        return list(self._selected_charms)
+
+        

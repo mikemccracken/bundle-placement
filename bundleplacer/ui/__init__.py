@@ -62,17 +62,12 @@ class ServicesColumn(WidgetWrap):
             state, _, _ = self.placement_controller.get_charm_state(cc)
             return state != CharmState.CONFLICTED
 
-        actions = [(not_conflicted_p, "Choose Machine",
-                    self.placement_view.do_show_machine_chooser)]
-        subordinate_actions = [(not_conflicted_p, "Add",
-                                self.do_place_subordinate)]
+        togglefunc = self.display_controller.do_toggle_selected_charm
         self.services_list = ServicesList(self.placement_controller,
-                                          actions,
-                                          subordinate_actions,
-                                          ignore_assigned=True,
-                                          ignore_deployed=True,
+                                          togglefunc,
+                                          ignore_assigned=False,
+                                          ignore_deployed=False,
                                           show_type='all',
-                                          show_constraints=True,
                                           title="Services to Place")
 
         autoplace_func = self.placement_view.do_autoplace
@@ -227,8 +222,9 @@ class MachinesColumn(WidgetWrap):
                       Padding(self.open_maas_button, align='right',
                               width=BUTTON_SIZE, right=2)])
 
+        togglefunc = self.display_controller.do_toggle_selected_machine
         self.machines_list = MachinesList(self.placement_controller,
-                                          [],
+                                          togglefunc,
                                           show_hardware=True,
                                           show_assignments=False,
                                           title_widgets=tw)
@@ -302,6 +298,7 @@ class ActionsColumn(WidgetWrap):
         self.display_controller = display_controller
         self.placement_controller = placement_controller
         self.placement_view = placement_view
+        self.showing_buttons = False
         w = self.build_widgets()
         super().__init__(w)
         self.update()
@@ -310,18 +307,13 @@ class ActionsColumn(WidgetWrap):
         return True
 
     def build_widgets(self):
-
+        self.info_label = Text("", align='center')
         pl = [
             Text(("body", "Container Type"), align='center'),
             Divider(),
-            Text("Nothing selected")
+            self.info_label,
+            Divider()
         ]
-
-        self.main_pile = Pile(pl)
-
-        return self.main_pile
-
-    def update(self):
         all_actions = [(AssignmentType.BareMetal,
                         'Add as Bare Metal',
                         self.do_select_baremetal),
@@ -329,7 +321,8 @@ class ActionsColumn(WidgetWrap):
                         'Add as LXC', self.do_select_lxc),
                        (AssignmentType.KVM,
                         'Add as KVM', self.do_select_kvm)]
-        # selected_charm_class = self.placement_view.selected_charm_class
+        # MMCC TODO:
+        # selected_charm_class = self.display_controller.selected_charm_classes
         # allowed_types = selected_charm_class.allowed_assignment_types
         self.action_buttons = [AttrMap(Button(label, on_press=func),
                                        'button_secondary',
@@ -339,8 +332,35 @@ class ActionsColumn(WidgetWrap):
 
         # self.button_grid = GridFlow(self.action_buttons,
         #                             36, 1, 0, 'center')
-        self.main_pile.contents[2] = (Pile(self.action_buttons),
-                                      self.main_pile.options())
+
+        self.main_pile = Pile(pl)
+
+        return self.main_pile
+
+    def update(self):
+        selected_charms = self.display_controller.selected_charms
+        
+        if len(selected_charms) == 0:
+            self.showing_buttons = False
+            self.info_label.set_text(("info", "No Charms Selected"))
+            return
+
+        selected_machines = self.display_controller.selected_machines
+
+        if len(selected_machines) == 0:
+            self.showing_buttons = False
+            self.info_label.set_text(("info", "No Machines Selected"))
+            return
+
+        cs = ",".join([m.charm_name for m in selected_charms])
+        ms = ",".join([m.hostname for m in selected_machines])
+        self.info_label.set_text(("info",
+                                  "Select container type to place "
+                                  "{} on {}".format(cs, ms)))
+        if not self.showing_buttons:
+            self.main_pile.contents[-1] = (Pile(self.action_buttons),
+                                           self.main_pile.options())
+            self.showing_buttons = True
     
     def do_select_baremetal(self, sender):
         pass
@@ -369,6 +389,7 @@ class PlacementView(WidgetWrap):
         self.placement_controller = placement_controller
         self.config = config
         self.do_deploy_cb = do_deploy_cb
+
         w = self.build_widgets()
         super().__init__(w)
         self.update()
@@ -403,6 +424,7 @@ class PlacementView(WidgetWrap):
     def update(self):
         self.services_column.update()
         self.machines_column.update()
+        self.actions_column.update()
 
     def do_autoplace(self, sender):
         ok, msg = self.placement_controller.autoassign_unassigned_services()

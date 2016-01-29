@@ -19,7 +19,7 @@ from urwid import (AttrMap, Divider, Padding, Pile, Text, WidgetWrap)
 from bundleplacer.maas import satisfies
 
 from bundleplacer.ui.filter_box import FilterBox
-from bundleplacer.ui.machine_widget import MachineWidget
+from bundleplacer.ui.simple_machine_widget import SimpleMachineWidget
 
 log = logging.getLogger('bundleplacer')
 
@@ -29,9 +29,7 @@ class MachinesList(WidgetWrap):
     """A list of machines with configurable action buttons for each
     machine.
 
-    actions - a list of ('label', function) pairs that wil be used to
-    create buttons for each machine.  The machine will be passed to
-    the function as userdata.
+    action - a function to call when the machine's button is pressed
 
     constraints - a dict of constraints to filter the machines list.
     only machines matching all the constraints will be shown.
@@ -47,11 +45,11 @@ class MachinesList(WidgetWrap):
 
     """
 
-    def __init__(self, controller, actions, constraints=None,
+    def __init__(self, controller, action, constraints=None,
                  show_hardware=False, title_widgets=None,
                  show_assignments=True):
         self.controller = controller
-        self.actions = actions
+        self.action = action
         self.machine_widgets = []
         if constraints is None:
             self.constraints = {}
@@ -145,15 +143,16 @@ class MachinesList(WidgetWrap):
         self.sort_machine_widgets()
 
     def add_machine_widget(self, machine):
-        mw = MachineWidget(machine, self.controller, self.actions,
-                           self.show_hardware, self.show_assignments)
+        mw = SimpleMachineWidget(machine, self.action,
+                                 self.controller,
+                                 self.show_assignments)
         self.machine_widgets.append(mw)
         options = self.machine_pile.options()
         self.machine_pile.contents.append((mw, options))
 
-        self.machine_pile.contents.append((AttrMap(Padding(Divider('\u23bc'),
-                                                           left=2, right=2),
-                                                   'label'), options))
+        # self.machine_pile.contents.append((AttrMap(Padding(Divider('\u23bc'),
+        #                                                    left=2, right=2),
+        #                                            'label'), options))
         return mw
 
     def remove_machine(self, machine):
@@ -175,7 +174,8 @@ class MachinesList(WidgetWrap):
     def sort_machine_widgets(self):
         def keyfunc(mw):
             m = mw.machine
-            hwinfo = " ".join(map(str, [m.arch, m.cpu_cores, m.mem, m.storage]))
+            hwinfo = " ".join(map(str, [m.arch, m.cpu_cores, m.mem,
+                                        m.storage]))
             if str(mw.machine.status) == 'ready':
                 skey = 'A'
             else:
@@ -185,8 +185,9 @@ class MachinesList(WidgetWrap):
 
         def wrappedkeyfunc(t):
             mw, options = t
-            if not isinstance(mw, MachineWidget):
+            if not isinstance(mw, SimpleMachineWidget):
                 return 'A'
             return keyfunc(mw)
-
+                
         self.machine_pile.contents.sort(key=wrappedkeyfunc)
+

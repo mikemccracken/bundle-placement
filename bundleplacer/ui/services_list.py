@@ -20,7 +20,7 @@ from urwid import (AttrMap, Divider, Padding, Pile, Text,
 
 from bundleplacer.maas import satisfies
 from bundleplacer.state import CharmState
-from bundleplacer.ui.service_widget import ServiceWidget
+from bundleplacer.ui.simple_service_widget import SimpleServiceWidget
 
 log = logging.getLogger('bundleplacer.ui')
 
@@ -33,8 +33,7 @@ class ServicesList(WidgetWrap):
 
     controller - a PlacementController
 
-    actions - a list of tuples describing buttons. Passed to
-    ServiceWidget.
+    action - an action function passed to SimpleServiceWidget.
 
     machine - a machine instance to query for constraint checking. If
     None, no constraint checking is done. If set, only services whose
@@ -58,15 +57,14 @@ class ServicesList(WidgetWrap):
 
     """
 
-    def __init__(self, controller, actions, subordinate_actions,
+    def __init__(self, controller, action,
                  machine=None, ignore_assigned=False,
                  ignore_deployed=False, assigned_only=False,
                  deployed_only=False, show_type='all',
                  show_constraints=False, show_placements=False,
                  title="Services", trace_updates=False):
         self.controller = controller
-        self.actions = actions
-        self.subordinate_actions = subordinate_actions
+        self.action = action
         self.service_widgets = []
         self.machine = machine
         self.ignore_assigned = ignore_assigned
@@ -174,13 +172,9 @@ class ServicesList(WidgetWrap):
             sw.update()
 
     def add_service_widget(self, charm_class):
-        if charm_class.subordinate:
-            actions = self.subordinate_actions
-        else:
-            actions = self.actions
-        sw = ServiceWidget(charm_class, self.controller, actions,
-                           self.show_constraints,
-                           show_placements=self.show_placements)
+        sw = SimpleServiceWidget(charm_class, self.controller,
+                                 self.action,
+                                 show_placements=self.show_placements)
         self.service_widgets.append(sw)
         options = self.service_pile.options()
         self.service_pile.contents.append((sw, options))

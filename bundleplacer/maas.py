@@ -122,6 +122,12 @@ class MaasMachineStatus(Enum):
 class MaasMachine(Machine):
     """ Single maas machine """
 
+    def __eq__(self, other):
+        return self.hostname == other.hostname
+
+    def __hash__(self):
+        return hash(self.hostname)
+    
     @property
     def hostname(self):
         """ Query hostname reported by MaaS
