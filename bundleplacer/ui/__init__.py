@@ -342,21 +342,28 @@ class ActionsColumn(WidgetWrap):
         
         if len(selected_charms) == 0:
             self.showing_buttons = False
-            self.info_label.set_text(("info", "No Charms Selected"))
-            return
+            charmstr = "No Charms Selected"
+        else:
+            charmstr = "Charms: " + ", ".join([m.charm_name
+                                               for m in selected_charms])
 
         selected_machines = self.display_controller.selected_machines
 
         if len(selected_machines) == 0:
             self.showing_buttons = False
-            self.info_label.set_text(("info", "No Machines Selected"))
+            machinestr = "No Machines Selected"
+        else:
+            machinestr = "Machines: " + ", ".join([m.hostname for m
+                                                   in selected_machines])
+
+        self.info_label.set_text(("info",
+                                  "Select container type to place:\n"
+                                  "{}\n{}".format(charmstr, machinestr)))
+
+        if len(selected_charms) == 0 or len(selected_machines) == 0:
             return
 
-        cs = ",".join([m.charm_name for m in selected_charms])
-        ms = ",".join([m.hostname for m in selected_machines])
-        self.info_label.set_text(("info",
-                                  "Select container type to place "
-                                  "{} on {}".format(cs, ms)))
+        # only change the pile if we were previously not showing it:
         if not self.showing_buttons:
             self.main_pile.contents[-1] = (Pile(self.action_buttons),
                                            self.main_pile.options())
