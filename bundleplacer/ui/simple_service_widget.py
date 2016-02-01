@@ -14,10 +14,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from urwid import (AttrMap, Button, GridFlow,
-                   Padding, Pile, SelectableIcon, Text, WidgetWrap)
+from urwid import AttrMap, Button, Padding, WidgetWrap
 
-from bundleplacer.utils import format_constraint
 from bundleplacer.state import CharmState
 
 
@@ -64,11 +62,22 @@ class SimpleServiceWidget(WidgetWrap):
 
         self.button = Button("I AM A SERVICE", self.do_action)
 
-        return Padding(self.button, left=2, right=2)
+        if self.is_selected:
+            return Padding(AttrMap(self.button, 'deploy_highlight_start',
+                                   'button_secondary focus'), left=2, right=2)
+        else:
+            return Padding(AttrMap(self.button, 'text',
+                                   'button_secondary focus'), left=2, right=2)
 
     def update(self):
-        self.update_title_markup()
-        markup = self.title_markup
+        self._w = self.build_widgets()
+
+        if self.is_selected:
+            markup = [("label", "\n\N{BALLOT BOX WITH CHECK} ")]
+        else:
+            markup = [("label", "\n\N{BALLOT BOX} ")]
+
+        markup += self.title_markup
 
         state, cons, deps = self.controller.get_charm_state(self.charm_class)
 
