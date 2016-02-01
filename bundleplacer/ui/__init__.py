@@ -315,24 +315,8 @@ class ActionsColumn(WidgetWrap):
             self.info_label,
             Divider()
         ]
-        all_actions = [(AssignmentType.BareMetal,
-                        'Add as Bare Metal',
-                        self.do_select_baremetal),
-                       (AssignmentType.LXC,
-                        'Add as LXC', self.do_select_lxc),
-                       (AssignmentType.KVM,
-                        'Add as KVM', self.do_select_kvm)]
-        # MMCC TODO:
-        # selected_charm_class = self.display_controller.selected_charm_classes
-        # allowed_types = selected_charm_class.allowed_assignment_types
-        self.action_buttons = [AttrMap(Button(label, on_press=func),
-                                       'button_secondary',
-                                       'button_secondary focus')
-                               for atype, label, func in all_actions]
-        # TEMP ---                                if atype in allowed_types]
-
-        # self.button_grid = GridFlow(self.action_buttons,
-        #                             36, 1, 0, 'center')
+        self.action_buttons = []
+        self.update_buttons()
 
         self.main_pile = Pile(pl)
 
@@ -364,12 +348,38 @@ class ActionsColumn(WidgetWrap):
         if len(selected_charms) == 0 or len(selected_machines) == 0:
             return
 
+        button_count_changed = self.update_buttons()
         # only change the pile if we were previously not showing it:
-        if not self.showing_buttons:
+        if not self.showing_buttons or button_count_changed:
             self.main_pile.contents[-1] = (Pile(self.action_buttons),
                                            self.main_pile.options())
             self.showing_buttons = True
-    
+
+    def update_buttons(self):
+        all_actions = [(AssignmentType.BareMetal,
+                        'Add as Bare Metal',
+                        self.do_select_baremetal),
+                       (AssignmentType.LXC,
+                        'Add as LXC', self.do_select_lxc),
+                       (AssignmentType.KVM,
+                        'Add as KVM', self.do_select_kvm)]
+
+        selected_charms = self.display_controller.selected_charms
+
+        allowed_sets = [set(sc.allowed_assignment_types)
+                        for sc in selected_charms]
+        allowed_types = set([atype for atype, _, _ in all_actions])
+        allowed_types = allowed_types.intersection(*allowed_sets)
+
+        prev_len = len(self.action_buttons)
+        self.action_buttons = [AttrMap(Button(label, on_press=func),
+                                       'button_secondary',
+                                       'button_secondary focus')
+                               for atype, label, func in all_actions
+                               if atype in allowed_types]
+
+        return len(self.action_buttons) != prev_len
+
     def do_select_baremetal(self, sender):
         pass
 
