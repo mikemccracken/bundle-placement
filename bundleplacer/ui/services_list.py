@@ -171,6 +171,8 @@ class ServicesList(WidgetWrap):
                 trace(cc, "added widget")
             sw.update()
 
+        self.sort_service_widgets()
+
     def add_service_widget(self, charm_class):
         sw = SimpleServiceWidget(charm_class, self.controller,
                                  self.action,
@@ -178,9 +180,9 @@ class ServicesList(WidgetWrap):
         self.service_widgets.append(sw)
         options = self.service_pile.options()
         self.service_pile.contents.append((sw, options))
-        self.service_pile.contents.append((AttrMap(Padding(Divider('\u23bc'),
-                                                           left=2, right=2),
-                                                   'label'), options))
+        # self.service_pile.contents.append((AttrMap(Padding(Divider('\u23bc'),
+        #                                                    left=2, right=2),
+        #                                            'label'), options))
         return sw
 
     def remove_service_widget(self, charm_class):
@@ -198,3 +200,21 @@ class ServicesList(WidgetWrap):
         c = self.service_pile.contents[:sw_idx] + \
             self.service_pile.contents[sw_idx + 2:]
         self.service_pile.contents = c
+
+    def sort_service_widgets(self):
+        def keyfunc(sw):
+            cc = sw.charm_class
+            if cc.subordinate:
+                skey = 'z'
+            else:
+                skey = cc.charm_name
+            return skey
+        self.service_widgets.sort(key=keyfunc)
+
+        def wrappedkeyfunc(t):
+            mw, options = t
+            if not isinstance(mw, SimpleServiceWidget):
+                return 'A'
+            return keyfunc(mw)
+
+        self.service_pile.contents.sort(key=wrappedkeyfunc)
