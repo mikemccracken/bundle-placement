@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from urwid import AttrMap, Button, Padding, WidgetWrap
+from urwid import AttrMap, Button, Padding, WidgetWrap, SelectableIcon
 
 from bundleplacer.state import CharmState
 
@@ -60,7 +60,10 @@ class SimpleServiceWidget(WidgetWrap):
     def build_widgets(self):
         self.update_title_markup()
 
-        self.button = Button("I AM A SERVICE", self.do_action)
+        if self.charm_class.subordinate:
+            self.button = SelectableIcon("I AM A SUBORDINATE SERVICE")
+        else:
+            self.button = Button("I AM A SERVICE", self.do_action)
 
         if self.is_selected:
             return Padding(AttrMap(self.button, 'deploy_highlight_start',
@@ -73,23 +76,20 @@ class SimpleServiceWidget(WidgetWrap):
         self._w = self.build_widgets()
 
         if self.is_selected:
-            markup = [("label", "\n\N{BALLOT BOX WITH CHECK} ")]
+            selection_markup = [("label", "\n\N{BALLOT BOX WITH CHECK} ")]
         else:
-            markup = [("label", "\n\N{BALLOT BOX} ")]
+            selection_markup = [("label", "\n\N{BALLOT BOX} ")]
 
-        markup += self.title_markup
+        if self.charm_class.subordinate:
+            selection_markup = [("")]
+        markup = selection_markup + self.title_markup
 
         state, cons, deps = self.controller.get_charm_state(self.charm_class)
 
         if state == CharmState.REQUIRED:
             p = self.controller.get_assignments(self.charm_class)
-            d = self.controller.get_deployments(self.charm_class)
             nr = self.charm_class.required_num_units()
-            info_str = " ({} of {} placed".format(len(p), nr)
-            if len(d) > 0:
-                info_str += ", {} deployed)".format(len(d))
-            else:
-                info_str += ")"
+            info_str = " ({} of {} placed)".format(len(p), nr)
 
             # Add hint to explain why a dep showed up in required
             if len(p) == 0 and len(deps) > 0:
@@ -117,12 +117,12 @@ class SimpleServiceWidget(WidgetWrap):
             return s
         markup += ["    ", ('label', "Assignments: ")]
         ad = self.controller.get_assignments(self.charm_class)
-        dd = self.controller.get_deployments(self.charm_class)
         markup += string_for_placement_dict(ad)
-        # mstr += ["\n    ", ('label', "Deployments: ")]
-        # mstr += string_for_placement_dict(dd)
 
-        self.button.set_label(markup)
+        if self.charm_class.subordinate:
+            self.button.set_text(markup)
+        else:
+            self.button.set_label(markup)
 
     def do_action(self, sender):
         self.is_selected = not self.is_selected
