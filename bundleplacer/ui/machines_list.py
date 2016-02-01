@@ -47,7 +47,8 @@ class MachinesList(WidgetWrap):
 
     def __init__(self, controller, action, constraints=None,
                  show_hardware=False, title_widgets=None,
-                 show_assignments=True):
+                 show_assignments=True,
+                 show_placeholders=True):
         self.controller = controller
         self.action = action
         self.machine_widgets = []
@@ -57,6 +58,7 @@ class MachinesList(WidgetWrap):
             self.constraints = constraints
         self.show_hardware = show_hardware
         self.show_assignments = show_assignments
+        self.show_placeholders = show_placeholders
         self.filter_string = ""
         w = self.build_widgets(title_widgets)
         self.update()
@@ -94,7 +96,8 @@ class MachinesList(WidgetWrap):
                      mw.machine.instance_id == m.instance_id), None)
 
     def update(self):
-        machines = self.controller.machines()
+        machines = self.controller.machines(
+            include_placeholders=self.show_placeholders)
         for mw in self.machine_widgets:
             machine = next((m for m in machines if
                             mw.machine.instance_id == m.instance_id), None)

@@ -227,6 +227,7 @@ class MachinesColumn(WidgetWrap):
                                           togglefunc,
                                           show_hardware=True,
                                           show_assignments=False,
+                                          show_placeholders=False,
                                           title_widgets=tw)
         self.machines_list.update()
 
