@@ -123,19 +123,14 @@ class MachinesList(WidgetWrap):
             assignment_names = ""
             ad = self.controller.assignments_for_machine(m)
             assignment_names = get_placement_filter_label(ad)
-            dd = self.controller.deployments_for_machine(m)
-            deployment_names = get_placement_filter_label(dd)
-            filter_label = "{} {} {}".format(m.filter_label(),
-                                             assignment_names,
-                                             deployment_names)
-
+            filter_label = "{} {}".format(m.filter_label(),
+                                          assignment_names)
             if self.filter_string != "" and \
                self.filter_string not in filter_label:
                 self.remove_machine(m)
                 continue
 
             mw = self.find_machine_widget(m)
-
             if mw is None:
                 mw = self.add_machine_widget(m)
             mw.update()
@@ -152,6 +147,9 @@ class MachinesList(WidgetWrap):
         self.machine_widgets.append(mw)
         options = self.machine_pile.options()
         self.machine_pile.contents.append((mw, options))
+
+        # NOTE: see the +1: indexing in remove_machine if you re-add
+        # this divider. it should then be +2.
 
         # self.machine_pile.contents.append((AttrMap(Padding(Divider('\u23bc'),
         #                                                    left=2, right=2),
@@ -171,7 +169,7 @@ class MachinesList(WidgetWrap):
             mw_idx += 1
 
         c = self.machine_pile.contents[:mw_idx] + \
-            self.machine_pile.contents[mw_idx + 2:]
+            self.machine_pile.contents[mw_idx + 1:]
         self.machine_pile.contents = c
 
     def sort_machine_widgets(self):

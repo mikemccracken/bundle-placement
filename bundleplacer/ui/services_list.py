@@ -180,6 +180,10 @@ class ServicesList(WidgetWrap):
         self.service_widgets.append(sw)
         options = self.service_pile.options()
         self.service_pile.contents.append((sw, options))
+
+        # NOTE: see the + 1: indexing in remove_service_widget if you
+        # re-add this divider. it should then be +2.
+
         # self.service_pile.contents.append((AttrMap(Padding(Divider('\u23bc'),
         #                                                    left=2, right=2),
         #                                            'label'), options))
@@ -198,7 +202,7 @@ class ServicesList(WidgetWrap):
             sw_idx += 1
 
         c = self.service_pile.contents[:sw_idx] + \
-            self.service_pile.contents[sw_idx + 2:]
+            self.service_pile.contents[sw_idx + 1:]
         self.service_pile.contents = c
 
     def sort_service_widgets(self):
