@@ -54,14 +54,6 @@ class ServicesColumn(WidgetWrap):
         return True
 
     def build_widgets(self):
-        self.deploy_view = DeployView(self.display_controller,
-                                      self.placement_controller,
-                                      self.placement_view)
-
-        def not_conflicted_p(cc):
-            state, _, _ = self.placement_controller.get_charm_state(cc)
-            return state != CharmState.CONFLICTED
-
         togglefunc = self.display_controller.do_toggle_selected_charm
         self.services_list = ServicesList(self.placement_controller,
                                           togglefunc,
@@ -92,7 +84,6 @@ class ServicesColumn(WidgetWrap):
             Text(("body", "Services"), align='center'),
             Divider(),
             self.top_button_grid, Divider(),
-            self.deploy_view, Divider(),
             self.services_pile, Divider(),
         ]
 
@@ -101,7 +92,6 @@ class ServicesColumn(WidgetWrap):
         return self.main_pile
 
     def update(self):
-        self.deploy_view.update()
         self.services_list.update()
 
         top_buttons = []
@@ -120,6 +110,13 @@ class ServicesColumn(WidgetWrap):
         top_buttons.append((self.clear_all_button,
                             self.top_button_grid.options()))
 
+        self.deploy_button = AttrMap(
+            Button("Deploy",
+                   on_press=self.placement_view.do_deploy),
+            'button_primary', 'button_primary focus')
+
+        top_buttons.append((self.deploy_button,
+                            self.top_button_grid.options()))
         self.top_button_grid.contents = top_buttons
 
     def do_reset_to_defaults(self, sender):
@@ -131,59 +128,6 @@ class ServicesColumn(WidgetWrap):
         self.placement_controller.assign(sub_placeholder,
                                          charm_class,
                                          AssignmentType.BareMetal)
-
-
-class DeployView(WidgetWrap):
-
-    def __init__(self, display_controller, placement_controller,
-                 placement_view):
-        self.display_controller = display_controller
-        self.placement_controller = placement_controller
-        self.placement_view = placement_view
-        self.prev_status = None
-        w = self.build_widgets()
-        super().__init__(w)
-        self.update()
-
-    def selectable(self):
-        return True
-
-    def build_widgets(self):
-        self.deploy_ok_msg = ("\u2713 All the required OpenStack services are "
-                              "placed on a machine, and you can now deploy.")
-
-        self.deploy_button = AttrMap(
-            Button("Deploy", on_press=self.do_deploy),
-            'button_primary', 'button_primary focus')
-        self.deploy_grid = GridFlow([self.deploy_button], 10, 1, 0, 'center')
-
-        self.unplaced_msg = "Some required services are still unassigned."
-
-        self.main_pile = Pile([Divider()])
-        return self.main_pile
-
-    def update(self):
-        changed = self.prev_status != self.placement_controller.can_deploy()
-
-        if self.placement_controller.can_deploy():
-            if changed:
-                self.show_deploy_button()
-        else:
-            self.main_pile.contents[0] = (Divider(),
-                                          self.main_pile.options())
-            if changed:
-                self.display_controller.status_error_message(self.unplaced_msg)
-
-        self.prev_status = self.placement_controller.can_deploy()
-
-    def show_deploy_button(self):
-        self.main_pile.contents[0] = (AttrMap(self.deploy_grid,
-                                              'deploy_highlight_start'),
-                                      self.main_pile.options())
-        self.display_controller.status_info_message(self.deploy_ok_msg)
-
-    def do_deploy(self, sender):
-        self.placement_view.do_deploy_cb()
 
 
 class MachinesColumn(WidgetWrap):
@@ -459,6 +403,9 @@ class PlacementView(WidgetWrap):
         self.show_overlay(ServiceChooser(self.placement_controller,
                                          machine,
                                          self))
+
+    def do_deploy(self, sender):
+        self.do_deploy_cb()
 
     def do_show_machine_chooser(self, sender, charm_class):
         self.show_overlay(MachineChooser(self.placement_controller,

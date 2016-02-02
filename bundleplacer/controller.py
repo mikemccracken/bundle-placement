@@ -562,6 +562,16 @@ class PlacementController:
             return (False, msg + "\n" + m)
         return (True, "")
 
+    def autoassign_unassigned_to_default(self):
+        """Assigns all unassigned services to juju default placeholder."""
+
+        for s in self.unassigned_undeployed_services():
+            log.debug(" ++++ {}".format(s))
+            d = self.assignments[self.def_placeholder.instance_id]
+            al = d[DEFAULT_SHARED_ASSIGNMENT_TYPE]
+            al.append(s)
+        self.update_and_save()
+
     def gen_defaults(self, charm_classes=None, maas_machines=None):
         """Generates an assignments dictionary for the given charm classes and
         machines, based on constraints.
@@ -724,6 +734,8 @@ class BundleWriter:
         servicenames = []
         machines = {}
         iid_map = {}            # maps iid to juju machine number
+
+        self.controller.autoassign_unassigned_to_default()
 
         # get a machine dict for every machine with at least one
         # service

@@ -41,7 +41,7 @@ class PlacerView(WidgetWrap):
             display_controller=self,
             placement_controller=self.placement_controller,
             config=self.config,
-            do_deploy_cb=self.done_cb)
+            do_deploy_cb=self.do_deploy)
         super().__init__(self.pv)
 
     def update(self, *args, **kwargs):
@@ -54,7 +54,7 @@ class PlacerView(WidgetWrap):
     def status_info_message(self, message):
         pass
 
-    def done_cb(self):
+    def do_deploy(self):
         self.cb()
 
     def do_toggle_selected_machine(self, machinewidget):
