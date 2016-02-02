@@ -62,26 +62,13 @@ class ServicesColumn(WidgetWrap):
             state, _, _ = self.placement_controller.get_charm_state(cc)
             return state != CharmState.CONFLICTED
 
-        actions = [(not_conflicted_p, "Choose Machine",
-                    self.placement_view.do_show_machine_chooser)]
-        subordinate_actions = [(not_conflicted_p, "Add",
-                                self.do_place_subordinate)]
-        self.required_services_list = ServicesList(self.placement_controller,
-                                                   actions,
-                                                   subordinate_actions,
-                                                   ignore_assigned=True,
-                                                   ignore_deployed=True,
-                                                   show_type='required',
-                                                   show_constraints=True,
-                                                   title="Required Services")
-        self.additional_services_list = ServicesList(self.placement_controller,
-                                                     actions,
-                                                     subordinate_actions,
-                                                     ignore_assigned=True,
-                                                     show_type='non-required',
-                                                     show_constraints=True,
-                                                     title="Additional "
-                                                     "Services")
+        togglefunc = self.display_controller.do_toggle_selected_charm
+        self.services_list = ServicesList(self.placement_controller,
+                                          togglefunc,
+                                          ignore_assigned=False,
+                                          ignore_deployed=False,
+                                          show_type='all',
+                                          title="Services to Place")
 
         autoplace_func = self.placement_view.do_autoplace
         self.autoplace_button = AttrMap(Button("Auto-place Remaining Services",
@@ -95,10 +82,7 @@ class ServicesColumn(WidgetWrap):
                                         'button_secondary',
                                         'button_secondary focus')
 
-        self.required_services_pile = Pile([self.required_services_list,
-                                            Divider()])
-        self.additional_services_pile = Pile([self.additional_services_list,
-                                              Divider()])
+        self.services_pile = Pile([self.services_list, Divider()])
 
         self.top_buttons = []
         self.top_button_grid = GridFlow(self.top_buttons,
@@ -109,8 +93,7 @@ class ServicesColumn(WidgetWrap):
             Divider(),
             self.top_button_grid, Divider(),
             self.deploy_view, Divider(),
-            self.required_services_pile, Divider(),
-            self.additional_services_pile
+            self.services_pile, Divider(),
         ]
 
         self.main_pile = Pile(pl)
@@ -119,8 +102,7 @@ class ServicesColumn(WidgetWrap):
 
     def update(self):
         self.deploy_view.update()
-        self.required_services_list.update()
-        self.additional_services_list.update()
+        self.services_list.update()
 
         top_buttons = []
         unplaced = self.placement_controller.unassigned_undeployed_services()
@@ -228,9 +210,6 @@ class MachinesColumn(WidgetWrap):
                      pc.assignments_for_machine(m).items()])
             return n > 0
 
-        clear_machine_func = self.placement_view.do_clear_machine
-        show_chooser_func = self.placement_view.do_show_service_chooser
-
         self.open_maas_button = AttrMap(Button("Open in Browser",
                                                on_press=self.browse_maas),
                                         'button_secondary',
@@ -243,14 +222,12 @@ class MachinesColumn(WidgetWrap):
                       Padding(self.open_maas_button, align='right',
                               width=BUTTON_SIZE, right=2)])
 
+        togglefunc = self.display_controller.do_toggle_selected_machine
         self.machines_list = MachinesList(self.placement_controller,
-                                          [(has_services_p,
-                                            'Clear All Services',
-                                            clear_machine_func),
-                                           (has_services_p,
-                                            'Remove Some Services',
-                                            show_chooser_func)],
+                                          togglefunc,
                                           show_hardware=True,
+                                          show_assignments=False,
+                                          show_placeholders=False,
                                           title_widgets=tw)
         self.machines_list.update()
 
@@ -312,6 +289,107 @@ class MachinesColumn(WidgetWrap):
         self.placement_view.show_overlay(w)
 
 
+class ActionsColumn(WidgetWrap):
+
+    """Displays dynamic list of unplaced services and associated controls
+    """
+
+    def __init__(self, display_controller, placement_controller,
+                 placement_view):
+        self.display_controller = display_controller
+        self.placement_controller = placement_controller
+        self.placement_view = placement_view
+        self.showing_buttons = False
+        w = self.build_widgets()
+        super().__init__(w)
+        self.update()
+
+    def selectable(self):
+        return True
+
+    def build_widgets(self):
+        self.info_label = Text("", align='center')
+        pl = [
+            Text(("body", "Container Type"), align='center'),
+            Divider(),
+            self.info_label,
+            Divider()
+        ]
+        self.action_buttons = []
+        self.update_buttons()
+
+        self.main_pile = Pile(pl)
+
+        return self.main_pile
+
+    def update(self):
+        selected_charms = self.display_controller.selected_charms
+        
+        if len(selected_charms) == 0:
+            self.showing_buttons = False
+            charmstr = "No Charms Selected"
+        else:
+            charmstr = "Charms: " + ", ".join([m.charm_name
+                                               for m in selected_charms])
+
+        selected_machines = self.display_controller.selected_machines
+
+        if len(selected_machines) == 0:
+            self.showing_buttons = False
+            machinestr = "No Machines Selected"
+        else:
+            machinestr = "Machines: " + ", ".join([m.hostname for m
+                                                   in selected_machines])
+
+        self.info_label.set_text(("info",
+                                  "Select container type to place:\n"
+                                  "{}\n{}".format(charmstr, machinestr)))
+
+        if len(selected_charms) == 0 or len(selected_machines) == 0:
+            return
+
+        button_count_changed = self.update_buttons()
+        # only change the pile if we were previously not showing it:
+        if not self.showing_buttons or button_count_changed:
+            self.main_pile.contents[-1] = (Pile(self.action_buttons),
+                                           self.main_pile.options())
+            self.showing_buttons = True
+
+    def update_buttons(self):
+        all_actions = [(AssignmentType.BareMetal,
+                        'Add as Bare Metal',
+                        self.do_select_baremetal),
+                       (AssignmentType.LXC,
+                        'Add as LXC', self.do_select_lxc),
+                       (AssignmentType.KVM,
+                        'Add as KVM', self.do_select_kvm)]
+
+        selected_charms = self.display_controller.selected_charms
+
+        allowed_sets = [set(sc.allowed_assignment_types)
+                        for sc in selected_charms]
+        allowed_types = set([atype for atype, _, _ in all_actions])
+        allowed_types = allowed_types.intersection(*allowed_sets)
+
+        prev_len = len(self.action_buttons)
+        self.action_buttons = [AttrMap(Button(label, on_press=func),
+                                       'button_secondary',
+                                       'button_secondary focus')
+                               for atype, label, func in all_actions
+                               if atype in allowed_types]
+
+        return len(self.action_buttons) != prev_len
+
+    def do_select_baremetal(self, sender):
+        pass
+
+    def do_select_lxc(self, sender):
+        pass
+
+    def do_select_kvm(self, sender):
+        pass
+
+
 class PlacementView(WidgetWrap):
 
     """
@@ -329,6 +407,7 @@ class PlacementView(WidgetWrap):
         self.placement_controller = placement_controller
         self.config = config
         self.do_deploy_cb = do_deploy_cb
+
         w = self.build_widgets()
         super().__init__(w)
         self.update()
@@ -348,8 +427,13 @@ class PlacementView(WidgetWrap):
                                               self.placement_controller,
                                               self)
 
+        self.actions_column = ActionsColumn(self.display_controller,
+                                            self.placement_controller,
+                                            self)
+        
         self.columns = Columns([self.services_column,
-                                self.machines_column])
+                                self.machines_column,
+                                self.actions_column])
         self.main_pile = Pile([Padding(self.columns,
                                        align='center',
                                        width=('relative', 95))])
@@ -358,6 +442,7 @@ class PlacementView(WidgetWrap):
     def update(self):
         self.services_column.update()
         self.machines_column.update()
+        self.actions_column.update()
 
     def do_autoplace(self, sender):
         ok, msg = self.placement_controller.autoassign_unassigned_services()

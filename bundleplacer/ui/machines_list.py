@@ -19,7 +19,7 @@ from urwid import (AttrMap, Divider, Padding, Pile, Text, WidgetWrap)
 from bundleplacer.maas import satisfies
 
 from bundleplacer.ui.filter_box import FilterBox
-from bundleplacer.ui.machine_widget import MachineWidget
+from bundleplacer.ui.simple_machine_widget import SimpleMachineWidget
 
 log = logging.getLogger('bundleplacer')
 
@@ -29,9 +29,7 @@ class MachinesList(WidgetWrap):
     """A list of machines with configurable action buttons for each
     machine.
 
-    actions - a list of ('label', function) pairs that wil be used to
-    create buttons for each machine.  The machine will be passed to
-    the function as userdata.
+    action - a function to call when the machine's button is pressed
 
     constraints - a dict of constraints to filter the machines list.
     only machines matching all the constraints will be shown.
@@ -47,11 +45,12 @@ class MachinesList(WidgetWrap):
 
     """
 
-    def __init__(self, controller, actions, constraints=None,
+    def __init__(self, controller, action, constraints=None,
                  show_hardware=False, title_widgets=None,
-                 show_assignments=True):
+                 show_assignments=True,
+                 show_placeholders=True):
         self.controller = controller
-        self.actions = actions
+        self.action = action
         self.machine_widgets = []
         if constraints is None:
             self.constraints = {}
@@ -59,6 +58,7 @@ class MachinesList(WidgetWrap):
             self.constraints = constraints
         self.show_hardware = show_hardware
         self.show_assignments = show_assignments
+        self.show_placeholders = show_placeholders
         self.filter_string = ""
         w = self.build_widgets(title_widgets)
         self.update()
@@ -96,7 +96,8 @@ class MachinesList(WidgetWrap):
                      mw.machine.instance_id == m.instance_id), None)
 
     def update(self):
-        machines = self.controller.machines()
+        machines = self.controller.machines(
+            include_placeholders=self.show_placeholders)
         for mw in self.machine_widgets:
             machine = next((m for m in machines if
                             mw.machine.instance_id == m.instance_id), None)
@@ -122,19 +123,14 @@ class MachinesList(WidgetWrap):
             assignment_names = ""
             ad = self.controller.assignments_for_machine(m)
             assignment_names = get_placement_filter_label(ad)
-            dd = self.controller.deployments_for_machine(m)
-            deployment_names = get_placement_filter_label(dd)
-            filter_label = "{} {} {}".format(m.filter_label(),
-                                             assignment_names,
-                                             deployment_names)
-
+            filter_label = "{} {}".format(m.filter_label(),
+                                          assignment_names)
             if self.filter_string != "" and \
                self.filter_string not in filter_label:
                 self.remove_machine(m)
                 continue
 
             mw = self.find_machine_widget(m)
-
             if mw is None:
                 mw = self.add_machine_widget(m)
             mw.update()
@@ -142,16 +138,22 @@ class MachinesList(WidgetWrap):
         self.filter_edit_box.set_info(len(self.machine_widgets),
                                       n_satisfying_machines)
 
+        self.sort_machine_widgets()
+
     def add_machine_widget(self, machine):
-        mw = MachineWidget(machine, self.controller, self.actions,
-                           self.show_hardware, self.show_assignments)
+        mw = SimpleMachineWidget(machine, self.action,
+                                 self.controller,
+                                 self.show_assignments)
         self.machine_widgets.append(mw)
         options = self.machine_pile.options()
         self.machine_pile.contents.append((mw, options))
 
-        self.machine_pile.contents.append((AttrMap(Padding(Divider('\u23bc'),
-                                                           left=2, right=2),
-                                                   'label'), options))
+        # NOTE: see the +1: indexing in remove_machine if you re-add
+        # this divider. it should then be +2.
+
+        # self.machine_pile.contents.append((AttrMap(Padding(Divider('\u23bc'),
+        #                                                    left=2, right=2),
+        #                                            'label'), options))
         return mw
 
     def remove_machine(self, machine):
@@ -167,5 +169,26 @@ class MachinesList(WidgetWrap):
             mw_idx += 1
 
         c = self.machine_pile.contents[:mw_idx] + \
-            self.machine_pile.contents[mw_idx + 2:]
+            self.machine_pile.contents[mw_idx + 1:]
         self.machine_pile.contents = c
+
+    def sort_machine_widgets(self):
+        def keyfunc(mw):
+            m = mw.machine
+            hwinfo = " ".join(map(str, [m.arch, m.cpu_cores, m.mem,
+                                        m.storage]))
+            if str(mw.machine.status) == 'ready':
+                skey = 'A'
+            else:
+                skey = str(mw.machine.status)
+            return skey + mw.machine.hostname + hwinfo
+        self.machine_widgets.sort(key=keyfunc)
+
+        def wrappedkeyfunc(t):
+            mw, options = t
+            if not isinstance(mw, SimpleMachineWidget):
+                return 'A'
+            return keyfunc(mw)
+                
+        self.machine_pile.contents.sort(key=wrappedkeyfunc)
+

@@ -20,7 +20,7 @@ from urwid import (AttrMap, Divider, Padding, Pile, Text,
 
 from bundleplacer.maas import satisfies
 from bundleplacer.state import CharmState
-from bundleplacer.ui.service_widget import ServiceWidget
+from bundleplacer.ui.simple_service_widget import SimpleServiceWidget
 
 log = logging.getLogger('bundleplacer.ui')
 
@@ -33,8 +33,7 @@ class ServicesList(WidgetWrap):
 
     controller - a PlacementController
 
-    actions - a list of tuples describing buttons. Passed to
-    ServiceWidget.
+    action - an action function passed to SimpleServiceWidget.
 
     machine - a machine instance to query for constraint checking. If
     None, no constraint checking is done. If set, only services whose
@@ -58,15 +57,14 @@ class ServicesList(WidgetWrap):
 
     """
 
-    def __init__(self, controller, actions, subordinate_actions,
+    def __init__(self, controller, action,
                  machine=None, ignore_assigned=False,
                  ignore_deployed=False, assigned_only=False,
                  deployed_only=False, show_type='all',
                  show_constraints=False, show_placements=False,
                  title="Services", trace_updates=False):
         self.controller = controller
-        self.actions = actions
-        self.subordinate_actions = subordinate_actions
+        self.action = action
         self.service_widgets = []
         self.machine = machine
         self.ignore_assigned = ignore_assigned
@@ -173,20 +171,22 @@ class ServicesList(WidgetWrap):
                 trace(cc, "added widget")
             sw.update()
 
+        self.sort_service_widgets()
+
     def add_service_widget(self, charm_class):
-        if charm_class.subordinate:
-            actions = self.subordinate_actions
-        else:
-            actions = self.actions
-        sw = ServiceWidget(charm_class, self.controller, actions,
-                           self.show_constraints,
-                           show_placements=self.show_placements)
+        sw = SimpleServiceWidget(charm_class, self.controller,
+                                 self.action,
+                                 show_placements=self.show_placements)
         self.service_widgets.append(sw)
         options = self.service_pile.options()
         self.service_pile.contents.append((sw, options))
-        self.service_pile.contents.append((AttrMap(Padding(Divider('\u23bc'),
-                                                           left=2, right=2),
-                                                   'label'), options))
+
+        # NOTE: see the + 1: indexing in remove_service_widget if you
+        # re-add this divider. it should then be +2.
+
+        # self.service_pile.contents.append((AttrMap(Padding(Divider('\u23bc'),
+        #                                                    left=2, right=2),
+        #                                            'label'), options))
         return sw
 
     def remove_service_widget(self, charm_class):
@@ -202,5 +202,23 @@ class ServicesList(WidgetWrap):
             sw_idx += 1
 
         c = self.service_pile.contents[:sw_idx] + \
-            self.service_pile.contents[sw_idx + 2:]
+            self.service_pile.contents[sw_idx + 1:]
         self.service_pile.contents = c
+
+    def sort_service_widgets(self):
+        def keyfunc(sw):
+            cc = sw.charm_class
+            if cc.subordinate:
+                skey = 'z'
+            else:
+                skey = cc.charm_name
+            return skey
+        self.service_widgets.sort(key=keyfunc)
+
+        def wrappedkeyfunc(t):
+            mw, options = t
+            if not isinstance(mw, SimpleServiceWidget):
+                return 'A'
+            return keyfunc(mw)
+
+        self.service_pile.contents.sort(key=wrappedkeyfunc)
