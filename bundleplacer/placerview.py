@@ -22,6 +22,8 @@ from bundleplacer.ui import PlacementView
 from ubuntui.ev import EventLoop
 from ubuntui.frame import Frame
 
+from bundleplacer.assignmenttype import AssignmentType
+
 log = logging.getLogger('bundleplacer')
 
 
@@ -57,6 +59,22 @@ class PlacerView(WidgetWrap):
     def do_deploy(self):
         self.cb()
 
+    def _do_select(self, atype):
+        for m in self._selected_machines:
+            for c in self._selected_charms:
+                self.placement_controller.assign(m, c, atype)
+
+    def do_select_baremetal(self, sender):
+        self._do_select(AssignmentType.BareMetal)
+
+    def do_select_lxc(self, sender):
+        log.debug("do_select_lxc")
+        self._do_select(AssignmentType.LXC)
+
+    def do_select_kvm(self, sender):
+        log.debug("do_select_kvm")
+        self._do_select(AssignmentType.KVM)
+
     def do_toggle_selected_machine(self, machinewidget):
         m = machinewidget.machine
         if m in self._selected_machines:
@@ -78,5 +96,3 @@ class PlacerView(WidgetWrap):
     @property
     def selected_charms(self):
         return list(self._selected_charms)
-
-        

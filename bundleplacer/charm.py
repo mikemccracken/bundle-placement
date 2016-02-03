@@ -13,6 +13,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+
+
+log = logging.getLogger('bundleplacer')
+
 
 class Charm:
     def __init__(self, charm_name, charm_source, summary_future,
@@ -53,10 +58,10 @@ class Charm:
         return "<Charm {}>".format(self.charm_name)
 
     def __eq__(self, other):
-        return self.__dict__ == other.__dict__
+        return self.charm_source == other.charm_source
 
     def __hash__(self):
         """We assume that we won't instantiate multiple Charm objects for the
         same class that have different properties.
         """
-        return hash(self.charm_name)
+        return hash(self.charm_source)

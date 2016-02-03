@@ -566,7 +566,6 @@ class PlacementController:
         """Assigns all unassigned services to juju default placeholder."""
 
         for s in self.unassigned_undeployed_services():
-            log.debug(" ++++ {}".format(s))
             d = self.assignments[self.def_placeholder.instance_id]
             al = d[DEFAULT_SHARED_ASSIGNMENT_TYPE]
             al.append(s)

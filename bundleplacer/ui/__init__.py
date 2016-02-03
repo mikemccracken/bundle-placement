@@ -302,11 +302,13 @@ class ActionsColumn(WidgetWrap):
     def update_buttons(self):
         all_actions = [(AssignmentType.BareMetal,
                         'Add as Bare Metal',
-                        self.do_select_baremetal),
+                        self.display_controller.do_select_baremetal),
                        (AssignmentType.LXC,
-                        'Add as LXC', self.do_select_lxc),
+                        'Add as LXC',
+                        self.display_controller.do_select_lxc),
                        (AssignmentType.KVM,
-                        'Add as KVM', self.do_select_kvm)]
+                        'Add as KVM',
+                        self.display_controller.do_select_kvm)]
 
         selected_charms = self.display_controller.selected_charms
 
@@ -323,15 +325,6 @@ class ActionsColumn(WidgetWrap):
                                if atype in allowed_types]
 
         return len(self.action_buttons) != prev_len
-
-    def do_select_baremetal(self, sender):
-        pass
-
-    def do_select_lxc(self, sender):
-        pass
-
-    def do_select_kvm(self, sender):
-        pass
 
 
 class PlacementView(WidgetWrap):
