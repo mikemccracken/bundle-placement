@@ -28,7 +28,7 @@ from bundleplacer.ui.service_chooser import ServiceChooser
 from bundleplacer.ui.services_list import ServicesList
 from ubuntui.views import InfoDialogWidget
 from ubuntui.widgets import MetaScroll
-from bundleplacer.state import CharmState
+
 
 log = logging.getLogger('bundleplacer')
 
@@ -109,10 +109,13 @@ class ServicesColumn(WidgetWrap):
 
         top_buttons.append((self.clear_all_button,
                             self.top_button_grid.options()))
-
+        all = self.placement_controller.charm_classes()
+        n_total = len(all)
+        remaining = len(unplaced) + len([c for c in all if c.subordinate])
+        dmsg = "Deploy (Auto-assigning {}/{} charms)".format(remaining,
+                                                             n_total)
         self.deploy_button = AttrMap(
-            Button("Deploy",
-                   on_press=self.placement_view.do_deploy),
+            Button(dmsg, on_press=self.placement_view.do_deploy),
             'button_primary', 'button_primary focus')
 
         top_buttons.append((self.deploy_button,
