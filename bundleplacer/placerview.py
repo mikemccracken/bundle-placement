@@ -63,6 +63,9 @@ class PlacerView(WidgetWrap):
         for m in self._selected_machines:
             for c in self._selected_charms:
                 self.placement_controller.assign(m, c, atype)
+        self._selected_charms = set()
+        self._selected_machines = set()
+        self.pv.clear_selections()
 
     def do_select_baremetal(self, sender):
         self._do_select(AssignmentType.BareMetal)

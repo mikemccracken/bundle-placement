@@ -132,6 +132,10 @@ class ServicesColumn(WidgetWrap):
                                          charm_class,
                                          AssignmentType.BareMetal)
 
+    def clear_selections(self):
+        for sw in self.services_list.service_widgets:
+            sw.is_selected = False
+
 
 class MachinesColumn(WidgetWrap):
 
@@ -234,6 +238,10 @@ class MachinesColumn(WidgetWrap):
 
         w = InfoDialogWidget(msg, self.placement_view.remove_overlay)
         self.placement_view.show_overlay(w)
+
+    def clear_selections(self):
+        for mw in self.machines_list.machine_widgets:
+            mw.is_selected = False
 
 
 class ActionsColumn(WidgetWrap):
@@ -394,6 +402,10 @@ class PlacementView(WidgetWrap):
 
     def do_clear_machine(self, sender, machine):
         self.placement_controller.clear_assignments(machine)
+
+    def clear_selections(self):
+        self.services_column.clear_selections()
+        self.machines_column.clear_selections()
 
     def do_show_service_chooser(self, sender, machine):
         self.show_overlay(ServiceChooser(self.placement_controller,
