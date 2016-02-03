@@ -68,11 +68,9 @@ class PlacerView(WidgetWrap):
         self._do_select(AssignmentType.BareMetal)
 
     def do_select_lxc(self, sender):
-        log.debug("do_select_lxc")
         self._do_select(AssignmentType.LXC)
 
     def do_select_kvm(self, sender):
-        log.debug("do_select_kvm")
         self._do_select(AssignmentType.KVM)
 
     def do_toggle_selected_machine(self, machinewidget):
