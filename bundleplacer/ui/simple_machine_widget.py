@@ -14,10 +14,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from urwid import (AttrMap, Button, Divider, GridFlow, Padding, Pile,
-                   SelectableIcon, Text, WidgetWrap)
+from urwid import AttrMap, WidgetWrap
 
-from bundleplacer.assignmenttype import AssignmentType
+from ubuntui.widgets.buttons import MenuSelectButton
 
 
 class SimpleMachineWidget(WidgetWrap):
@@ -56,14 +55,14 @@ class SimpleMachineWidget(WidgetWrap):
 
     def build_widgets(self):
 
-        self.button = Button("I AM A MACHINE", self.do_action)
+        self.button = MenuSelectButton("I AM A MACHINE", self.do_action)
 
         if self.is_selected:
-            return Padding(AttrMap(self.button, 'deploy_highlight_start',
-                                   'button_secondary focus'), left=2, right=2)
+            return AttrMap(self.button, 'deploy_highlight_start',
+                           'button_secondary focus')
         else:
-            return Padding(AttrMap(self.button, 'text',
-                                   'button_secondary focus'), left=2, right=2)
+            return AttrMap(self.button, 'text',
+                           'button_secondary focus')
             
     def update_machine(self):
         """Refresh with potentially updated machine info from controller.

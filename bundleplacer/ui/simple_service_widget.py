@@ -14,7 +14,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from urwid import AttrMap, Button, Padding, WidgetWrap, SelectableIcon
+from urwid import AttrMap, WidgetWrap, SelectableIcon
+
+from ubuntui.widgets.buttons import MenuSelectButton
 
 from bundleplacer.state import CharmState
 
@@ -54,29 +56,26 @@ class SimpleServiceWidget(WidgetWrap):
         dn = self.charm_class.display_name
         self.title_markup = ["\N{GEAR} {}".format(dn), ""]
         summary = self.charm_class.summary
+        pad = ""
+        if self.charm_class.subordinate:
+            pad = "  "
         if summary != "":
-            self.title_markup.append("\n {}\n".format(summary))
+            self.title_markup.append("\n {}{}\n".format(pad, summary))
 
     def build_widgets(self):
         self.update_title_markup()
 
-        pad_adj = 0
         if self.charm_class.subordinate:
             self.button = SelectableIcon("I AM A SUBORDINATE SERVICE")
-            pad_adj = 2
         else:
-            self.button = Button("I AM A SERVICE", self.do_action)
+            self.button = MenuSelectButton("I AM A SERVICE", self.do_action)
 
         if self.is_selected:
-            return Padding(AttrMap(self.button, 'deploy_highlight_start',
-                                   'button_secondary focus'),
-                           left=2+pad_adj,
-                           right=2+pad_adj)
+            return AttrMap(self.button, 'deploy_highlight_start',
+                           'button_secondary focus')
         else:
-            return Padding(AttrMap(self.button, 'text',
-                                   'button_secondary focus'),
-                           left=2+pad_adj,
-                           right=2+pad_adj)
+            return AttrMap(self.button, 'text',
+                           'button_secondary focus')
 
     def update(self):
         self._w = self.build_widgets()
@@ -89,7 +88,7 @@ class SimpleServiceWidget(WidgetWrap):
             selection_markup = [(accent_style, "\n\N{BALLOT BOX} ")]
 
         if self.charm_class.subordinate:
-            self.button.set_text([("\n")] + self.title_markup)
+            self.button.set_text([("\n  ")] + self.title_markup)
             return
 
         markup = selection_markup + self.title_markup
