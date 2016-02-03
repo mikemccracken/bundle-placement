@@ -18,7 +18,7 @@ import logging
 from urwid import (AttrMap, Button, Columns, GridFlow,
                    LineBox, Pile, SelectableIcon, WidgetWrap)
 
-from bundleplacer.controller import AssignmentType
+from bundleplacer.assignmenttype import AssignmentType
 from bundleplacer.ui.services_list import ServicesList
 from state import CharmState
 

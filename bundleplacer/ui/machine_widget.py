@@ -17,7 +17,7 @@
 from urwid import (AttrMap, Button, Divider, GridFlow, Padding, Pile,
                    SelectableIcon, Text, WidgetWrap)
 
-from bundleplacer.controller import AssignmentType
+from bundleplacer.assignmenttype import AssignmentType
 
 
 class MachineWidget(WidgetWrap):

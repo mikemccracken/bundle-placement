@@ -20,7 +20,7 @@ from urwid import (AttrMap, Button, Columns, Divider, Filler,
                    GridFlow, Overlay, Padding, Pile, SelectableIcon,
                    Text, WidgetWrap)
 
-from bundleplacer.controller import AssignmentType
+from bundleplacer.assignmenttype import AssignmentType
 
 from bundleplacer.ui.machine_chooser import MachineChooser
 from bundleplacer.ui.machines_list import MachinesList
