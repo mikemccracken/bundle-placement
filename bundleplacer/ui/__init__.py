@@ -91,6 +91,14 @@ class ServicesColumn(WidgetWrap):
 
         return self.main_pile
 
+    def focus_next(self):
+        self.update()
+        pos = self.services_list.service_pile.focus_position
+        try:
+            self.services_list.service_pile.focus_position = pos + 1
+        except IndexError:
+            log.debug("caught indexerror in servicescolumn.focus_next")
+
     def update(self):
         self.services_list.update()
 
@@ -243,10 +251,22 @@ class MachinesColumn(WidgetWrap):
         for mw in self.machines_list.machine_widgets:
             mw.is_selected = False
 
+    def focus_prev_or_top(self):
+        self.update()
+        try:
+            self.main_pile.focus_position = 2
+            self.machines_list_pile.focus_position = 0
+            self.machines_list.focus_prev_or_top()
+        except IndexError:
+            log.debug("caught indexerror in machinesColumn focus_prev_or_top")
+            pass
+
 
 class ActionsColumn(WidgetWrap):
 
-    """Displays dynamic list of unplaced services and associated controls
+    """Displays dynamic list of buttons to place selected services on
+    selected machines.
+
     """
 
     def __init__(self, display_controller, placement_controller,
@@ -337,6 +357,17 @@ class ActionsColumn(WidgetWrap):
 
         return len(self.action_buttons) != prev_len
 
+    def focus_top(self):
+        self.update()
+        pos = self.main_pile.focus_position
+        log.debug("aclist pos is {}".format(pos))
+        try:
+            newpos = len(self.main_pile.contents) - 1
+            self.main_pile.focus_position = newpos
+        except IndexError:
+            log.debug("caught indexerror?")
+            pass
+
 
 class PlacementView(WidgetWrap):
 
@@ -358,7 +389,7 @@ class PlacementView(WidgetWrap):
 
         w = self.build_widgets()
         super().__init__(w)
-        self.update()
+        self.reset_selections()  # calls self.update
 
     def scroll_down(self):
         pass
@@ -403,9 +434,20 @@ class PlacementView(WidgetWrap):
     def do_clear_machine(self, sender, machine):
         self.placement_controller.clear_assignments(machine)
 
-    def clear_selections(self):
+    def reset_selections(self):
+        self.update()
         self.services_column.clear_selections()
         self.machines_column.clear_selections()
+        self.columns.focus_position = 0
+        self.services_column.focus_next()
+
+    def focus_machines_column(self):
+        self.columns.focus_position = 1
+        self.machines_column.focus_prev_or_top()
+
+    def focus_actions_column(self):
+        self.columns.focus_position = 2
+        self.actions_column.focus_top()
 
     def do_show_service_chooser(self, sender, machine):
         self.show_overlay(ServiceChooser(self.placement_controller,

@@ -192,3 +192,10 @@ class MachinesList(WidgetWrap):
                 
         self.machine_pile.contents.sort(key=wrappedkeyfunc)
 
+    def focus_prev_or_top(self):
+        self.update()
+        try:
+            if self.machine_pile.focus_position <= 2:
+                self.machine_pile.focus_position = 3
+        except IndexError:
+            log.debug("index error in machines_list focus_top")

@@ -132,4 +132,5 @@ class SimpleServiceWidget(WidgetWrap):
 
     def do_action(self, sender):
         self.is_selected = not self.is_selected
+        self.update()
         self.action(self)

@@ -45,6 +45,7 @@ class PlacerView(WidgetWrap):
             config=self.config,
             do_deploy_cb=self.do_deploy)
         super().__init__(self.pv)
+        self.pv.reset_selections()
 
     def update(self, *args, **kwargs):
         self.pv.update()
@@ -65,7 +66,7 @@ class PlacerView(WidgetWrap):
                 self.placement_controller.assign(m, c, atype)
         self._selected_charms = set()
         self._selected_machines = set()
-        self.pv.clear_selections()
+        self.pv.reset_selections()
 
     def do_select_baremetal(self, sender):
         self._do_select(AssignmentType.BareMetal)
@@ -82,6 +83,7 @@ class PlacerView(WidgetWrap):
             self._selected_machines.remove(m)
         else:
             self._selected_machines.add(m)
+        self.pv.focus_actions_column()
 
     @property
     def selected_machines(self):
@@ -93,6 +95,7 @@ class PlacerView(WidgetWrap):
             self._selected_charms.remove(charm_class)
         else:
             self._selected_charms.add(charm_class)
+        self.pv.focus_machines_column()
 
     @property
     def selected_charms(self):
