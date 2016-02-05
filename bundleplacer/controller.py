@@ -725,7 +725,9 @@ class BundleWriter:
                 dst_charm = dst.split(":")[0]
                 if src_charm in service_names and dst_charm in service_names:
                     relations.append([src, dst])
-        return relations
+        # uniquify list of relations
+        seen = set()
+        return [r for r in relations if str(r) not in seen and not seen.add(str(r))]
 
     def write_bundle(self, filename):
         bundle = {}
