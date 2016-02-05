@@ -40,6 +40,6 @@ Depends: gawk,
          ${misc:Depends},
          ${python3:Depends},
          ${shlibs:Depends}
-Description: Bundle Placer
+Description: Placement interface to Juju bundles
  This package provides bundle placer a runtime for placing services
  and configuring services from a charm bundle.yaml.
