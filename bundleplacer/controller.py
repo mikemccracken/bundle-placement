@@ -727,7 +727,8 @@ class BundleWriter:
                     relations.append([src, dst])
         # uniquify list of relations
         seen = set()
-        return [r for r in relations if str(r) not in seen and not seen.add(str(r))]
+        return [r for r in relations
+                if str(r) not in seen and not seen.add(str(r))]
 
     def write_bundle(self, filename):
         bundle = {}
