@@ -45,7 +45,7 @@ class PlacerView(WidgetWrap):
             config=self.config,
             do_deploy_cb=self.do_deploy)
         super().__init__(self.pv)
-        self.pv.reset_selections()
+        self.pv.reset_selections(top=True)
 
     def update(self, *args, **kwargs):
         self.pv.update()

@@ -92,6 +92,27 @@ class ServicesList(WidgetWrap):
                                  self.service_widgets)
         return self.service_pile
 
+    def focus_top_or_next(self):
+        self._setfocus(top=False)
+
+    def focus_top(self):
+        self._setfocus(top=True)
+
+    def _setfocus(self, top):
+        pos = self.service_pile.focus_position
+        try:
+            if top or pos < 2:
+                self.service_pile.focus_position = 2
+            else:
+                self.service_pile.focus_position = pos + 1
+        except IndexError:
+            log.debug("caught indexerror in servicescolumn.focus_next")
+
+    def focused_service_widget(self):
+        if len(self.service_widgets) > 0:
+            return self.service_pile.focus
+        return None
+
     def find_service_widget(self, cc):
         return next((sw for sw in self.service_widgets if
                      sw.charm_class.charm_name == cc.charm_name), None)

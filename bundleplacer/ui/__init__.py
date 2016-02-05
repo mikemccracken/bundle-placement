@@ -91,13 +91,17 @@ class ServicesColumn(WidgetWrap):
 
         return self.main_pile
 
+    def focus_top(self):
+        self.update()
+        self.services_list.focus_top()
+
     def focus_next(self):
         self.update()
-        pos = self.services_list.service_pile.focus_position
-        try:
-            self.services_list.service_pile.focus_position = pos + 1
-        except IndexError:
-            log.debug("caught indexerror in servicescolumn.focus_next")
+        self.services_list.focus_top_or_next()
+        fsw = self.services_list.focused_service_widget()
+        if fsw and fsw.charm_class.subordinate:
+            self.main_pile.focus_position = 2
+            self.top_button_grid.focus_position = 2
 
     def update(self):
         self.services_list.update()
@@ -389,7 +393,7 @@ class PlacementView(WidgetWrap):
 
         w = self.build_widgets()
         super().__init__(w)
-        self.reset_selections()  # calls self.update
+        self.reset_selections(top=True)  # calls self.update
 
     def scroll_down(self):
         pass
@@ -434,12 +438,16 @@ class PlacementView(WidgetWrap):
     def do_clear_machine(self, sender, machine):
         self.placement_controller.clear_assignments(machine)
 
-    def reset_selections(self):
+    def reset_selections(self, top=False):
         self.update()
         self.services_column.clear_selections()
         self.machines_column.clear_selections()
         self.columns.focus_position = 0
-        self.services_column.focus_next()
+
+        if top:
+            self.services_column.focus_top()
+        else:
+            self.services_column.focus_next()
 
     def focus_machines_column(self):
         self.columns.focus_position = 1
