@@ -93,13 +93,15 @@ class ServicesList(WidgetWrap):
         return self.service_pile
 
     def focus_top_or_next(self):
-        self._setfocus(top=False)
+        return self._setfocus(top=False)
 
     def focus_top(self):
-        self._setfocus(top=True)
+        return self._setfocus(top=True)
 
     def _setfocus(self, top):
         pos = self.service_pile.focus_position
+        if pos + 1 >= len(self.service_widgets) + 2:
+            return False
         try:
             if top or pos < 2:
                 self.service_pile.focus_position = 2
@@ -107,6 +109,8 @@ class ServicesList(WidgetWrap):
                 self.service_pile.focus_position = pos + 1
         except IndexError:
             log.debug("caught indexerror in servicescolumn.focus_next")
+            return False
+        return True
 
     def focused_service_widget(self):
         if len(self.service_widgets) > 0:

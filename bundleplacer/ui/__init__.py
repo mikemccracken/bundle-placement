@@ -97,9 +97,9 @@ class ServicesColumn(WidgetWrap):
 
     def focus_next(self):
         self.update()
-        self.services_list.focus_top_or_next()
+        moved = self.services_list.focus_top_or_next()
         fsw = self.services_list.focused_service_widget()
-        if fsw and fsw.charm_class.subordinate:
+        if not moved or (fsw and fsw.charm_class.subordinate):
             self.main_pile.focus_position = 2
             self.top_button_grid.focus_position = 2
 
