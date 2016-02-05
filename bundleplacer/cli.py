@@ -72,6 +72,8 @@ def main():
                                                maas_state=maas_state)
 
     def cb():
+        maas.tag_name(maas.nodes)
+
         bw = BundleWriter(placement_controller)
         if opts.out_filename:
             outfn = opts.out_filename
