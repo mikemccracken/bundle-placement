@@ -709,7 +709,7 @@ class BundleWriter:
                       AssignmentType.BareMetal: "",
                       AssignmentType.KVM: "kvm:",
                       AssignmentType.LXC: "lxc:"}[atype]
-            d['to'] = "{}{}".format(prefix, to)
+            d['to'] = ["{}{}".format(prefix, to)]
         return d
 
     def _dict_for_machine(self, mid):
