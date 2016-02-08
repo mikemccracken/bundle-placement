@@ -13,10 +13,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 
-from urwid import AttrMap, WidgetWrap
+from urwid import AttrMap, WidgetWrap, SelectableIcon
 
+from bundleplacer.maas import MaasMachineStatus
 from ubuntui.widgets.buttons import MenuSelectButton
+
+log = logging.getLogger('bundleplacer')
 
 
 class SimpleMachineWidget(WidgetWrap):
@@ -55,7 +59,10 @@ class SimpleMachineWidget(WidgetWrap):
 
     def build_widgets(self):
 
-        self.button = MenuSelectButton("I AM A MACHINE", self.do_action)
+        if not self.machine_is_selectable():
+            self.button = SelectableIcon("I am an unavailable machine")
+        else:
+            self.button = MenuSelectButton("I AM A MACHINE", self.do_action)
 
         if self.is_selected:
             return AttrMap(self.button, 'deploy_highlight_start',
@@ -73,9 +80,19 @@ class SimpleMachineWidget(WidgetWrap):
                              if m.instance_id == self.machine.instance_id),
                             None)
 
+    def machine_is_selectable(self):
+        return self.machine.status == MaasMachineStatus.READY
+
     def update(self):
-        self._w = self.build_widgets()
         self.update_machine()
+        self._w = self.build_widgets()
+
+        if not self.machine_is_selectable():
+            markup = [('label',
+                       "\N{TAPE DRIVE} {}".format(self.machine.hostname)),
+                      ('label', " ({})\n".format(self.machine.status))]
+            self.button.set_text([("\n  ")] + markup)
+            return
 
         if self.is_selected:
             markup = [("label", "\n\N{BALLOT BOX WITH CHECK} ")]
@@ -91,6 +108,7 @@ class SimpleMachineWidget(WidgetWrap):
                        ('label', " ({})\n".format(self.machine.status))]
             markup += self.hardware_info_markup()
 
+            
         # ad = self.controller.assignments_for_machine(self.machine)
         # astr = [('label', "  Services: ")]
 
