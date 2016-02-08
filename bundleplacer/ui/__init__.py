@@ -303,7 +303,7 @@ class ActionsColumn(WidgetWrap):
 
     def update(self):
         selected_charms = self.display_controller.selected_charms
-        
+
         if len(selected_charms) == 0:
             self.showing_buttons = False
             charmstr = "No Charms Selected"
@@ -363,8 +363,6 @@ class ActionsColumn(WidgetWrap):
 
     def focus_top(self):
         self.update()
-        pos = self.main_pile.focus_position
-        log.debug("aclist pos is {}".format(pos))
         try:
             newpos = len(self.main_pile.contents) - 1
             self.main_pile.focus_position = newpos
@@ -413,7 +411,7 @@ class PlacementView(WidgetWrap):
         self.actions_column = ActionsColumn(self.display_controller,
                                             self.placement_controller,
                                             self)
-        
+
         self.columns = Columns([self.services_column,
                                 self.machines_column,
                                 self.actions_column])
