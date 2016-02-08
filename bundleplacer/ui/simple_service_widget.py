@@ -117,16 +117,18 @@ class SimpleServiceWidget(WidgetWrap):
                 n = len(ml)
                 s.append(('label', "    {} ({}): ".format(atype.name, n)))
                 if len(ml) == 0:
-                    s.append("\N{DOTTED CIRCLE}")
+                    s.append(('label', "\N{DOTTED CIRCLE}"))
                 else:
-                    s.append(", ".join(["\N{TAPE DRIVE} {}".format(m.hostname)
-                                        for m in ml]))
+                    s.append(('label',
+                              ", ".join(["\N{TAPE DRIVE} {}".format(m.hostname)
+                                         for m in ml])))
             if len(s) == 0:
                 return [('label', "None")]
             return s
-        # markup += ["    ", ('label', "Assignments: ")]
-        # ad = self.controller.get_assignments(self.charm_class)
-        # markup += string_for_placement_dict(ad)
+
+        markup += ["    ", ('label', "Assignments: ")]
+        ad = self.controller.get_assignments(self.charm_class)
+        markup += string_for_placement_dict(ad)
 
         self.button.set_label(markup)
 
