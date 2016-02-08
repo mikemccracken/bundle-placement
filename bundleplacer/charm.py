@@ -58,10 +58,12 @@ class Charm:
         return "<Charm {}>".format(self.charm_name)
 
     def __eq__(self, other):
-        return self.charm_source == other.charm_source
+        me = self.charm_source + self.charm_name
+        them = other.charm_source + other.charm_name
+        return me == them
 
     def __hash__(self):
         """We assume that we won't instantiate multiple Charm objects for the
         same class that have different properties.
         """
-        return hash(self.charm_source)
+        return hash(self.charm_source + self.charm_name)
