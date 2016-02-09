@@ -753,7 +753,7 @@ class BundleWriter:
             if sum([len(svcs) for svcs in d.values()]) == 0:
                 continue
             if iid not in ["_subordinates", "_default"]:
-                machine_id = len(machines)
+                machine_id = len(machines) + 1
                 iid_map[iid] = machine_id
                 machines[machine_id] = self._dict_for_machine(iid)
 
