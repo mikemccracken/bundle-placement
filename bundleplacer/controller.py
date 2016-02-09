@@ -15,7 +15,6 @@
 
 from collections import defaultdict, Counter
 import copy
-# from enum import Enum
 import logging
 import yaml
 from multiprocessing import cpu_count
