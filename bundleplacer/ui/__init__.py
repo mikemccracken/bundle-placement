@@ -325,6 +325,9 @@ class ActionsColumn(WidgetWrap):
                                   "{}\n{}".format(charmstr, machinestr)))
 
         if len(selected_charms) == 0 or len(selected_machines) == 0:
+            self.main_pile.contents[-1] = (Divider(),
+                                           self.main_pile.options())
+            self.showing_buttons = False
             return
 
         button_count_changed = self.update_buttons()
