@@ -698,17 +698,26 @@ class BundleWriter:
     def __init__(self, controller):
         self.controller = controller
 
-    def _dict_for_service(self, svc, atype, to):
+    def _dict_for_service(self, svc, atype, to, services):
+
+        tolist = []
+        num_units = 1
+        if svc.charm_name in services:
+            num_units = services[svc.charm_name]['num_units'] + 1
+            tolist = services[svc.charm_name]['to']
 
         d = dict(charm=svc.charm_source,
-                 num_units=1,
+                 num_units=num_units,
                  options=svc.options)
         if to is not None:
             prefix = {AssignmentType.DEFAULT: "",
                       AssignmentType.BareMetal: "",
                       AssignmentType.KVM: "kvm:",
                       AssignmentType.LXC: "lxc:"}[atype]
-            d['to'] = ["{}{}".format(prefix, to)]
+            tolist.append("{}{}".format(prefix, to))
+
+        if len(tolist) > 0:
+            d['to'] = tolist
         return d
 
     def _dict_for_machine(self, mid):
@@ -754,7 +763,8 @@ class BundleWriter:
                     continue
                 for svc in svcs:
                     sd = self._dict_for_service(svc, atype,
-                                                iid_map.get(iid, None))
+                                                iid_map.get(iid, None),
+                                                services)
                     services[svc.charm_name] = sd
                     servicenames.append(svc)
 
