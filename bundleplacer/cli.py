@@ -66,13 +66,15 @@ def main():
                      api_key=opts.maas_cred)
         maas, maas_state = connect_to_maas(creds)
     else:
+        maas = None
         maas_state = FakeMaasState()
 
     placement_controller = PlacementController(config=config,
                                                maas_state=maas_state)
 
     def cb():
-        maas.tag_name(maas.nodes)
+        if maas:
+            maas.tag_name(maas.nodes)
 
         bw = BundleWriter(placement_controller)
         if opts.out_filename:
