@@ -440,9 +440,9 @@ class PlacementView(WidgetWrap):
         self.placement_controller.clear_assignments(machine)
 
     def reset_selections(self, top=False):
-        self.update()
         self.services_column.clear_selections()
         self.machines_column.clear_selections()
+        self.update()
         self.columns.focus_position = 0
 
         if top:
