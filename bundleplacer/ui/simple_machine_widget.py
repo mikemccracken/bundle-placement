@@ -52,10 +52,10 @@ class SimpleMachineWidget(WidgetWrap):
 
     def hardware_info_markup(self):
         m = self.machine
-        return [('label', 'arch'), ' {}  '.format(m.arch),
-                ('label', 'cores'), ' {}  '.format(m.cpu_cores),
-                ('label', 'mem'), ' {}  '.format(m.mem),
-                ('label', 'storage'), ' {}'.format(m.storage)]
+        return ['arch: {}  '.format(m.arch),
+                'cores: {}  '.format(m.cpu_cores),
+                'mem: {}  '.format(m.mem),
+                'storage: {}'.format(m.storage)]
 
     def build_widgets(self):
 
@@ -88,16 +88,15 @@ class SimpleMachineWidget(WidgetWrap):
         self._w = self.build_widgets()
 
         if not self.machine_is_selectable():
-            markup = [('label',
-                       "\N{TAPE DRIVE} {}".format(self.machine.hostname)),
-                      ('label', " ({})\n".format(self.machine.status))]
+            markup = ["\N{TAPE DRIVE} {}".format(self.machine.hostname),
+                      " ({})\n".format(self.machine.status)]
             self.button.set_text([("\n  ")] + markup)
             return
 
         if self.is_selected:
-            markup = [("label", "\n\N{BALLOT BOX WITH CHECK} ")]
+            markup = ["\n\N{BALLOT BOX WITH CHECK} "]
         else:
-            markup = [("label", "\n\N{BALLOT BOX} ")]
+            markup = ["\n\N{BALLOT BOX} "]
             
         if self.machine == self.controller.sub_placeholder:
             markup += [('error', "SHOULD NOT SHOW PLACEHOLDER FOR SUBS")]
@@ -105,7 +104,7 @@ class SimpleMachineWidget(WidgetWrap):
             markup += [('error', "DEFAULT PLACEHOLDER SHOULD NOT SHOW!")]
         else:
             markup += ["\N{TAPE DRIVE} {}".format(self.machine.hostname),
-                       ('label', " ({})\n".format(self.machine.status))]
+                       (" ({})\n".format(self.machine.status))]
             markup += self.hardware_info_markup()
 
             

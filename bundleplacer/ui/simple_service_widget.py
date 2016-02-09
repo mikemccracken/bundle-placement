@@ -81,11 +81,9 @@ class SimpleServiceWidget(WidgetWrap):
         self._w = self.build_widgets()
 
         if self.is_selected:
-            accent_style = "deploy_highlight_start"  # was "label"
-            selection_markup = [(accent_style, "\n\N{BALLOT BOX WITH CHECK} ")]
+            selection_markup = ["\n\N{BALLOT BOX WITH CHECK} "]
         else:
-            accent_style = "text"
-            selection_markup = [(accent_style, "\n\N{BALLOT BOX} ")]
+            selection_markup = ["\n\N{BALLOT BOX} "]
 
         if self.charm_class.subordinate:
             self.button.set_text([("\n  ")] + self.title_markup)
@@ -105,7 +103,7 @@ class SimpleServiceWidget(WidgetWrap):
                 dep_str = ", ".join([c.display_name for c in deps])
                 info_str += " - required by {}".format(dep_str)
 
-            markup.append((accent_style, info_str))
+            markup.append(info_str)
         elif state == CharmState.CONFLICTED:
             raise Exception("CONFLICTED not supported by simple widget")
         elif state == CharmState.OPTIONAL:
@@ -115,18 +113,17 @@ class SimpleServiceWidget(WidgetWrap):
             s = []
             for atype, ml in d.items():
                 n = len(ml)
-                s.append(('label', "    {} ({}): ".format(atype.name, n)))
+                s.append("    {} ({}): ".format(atype.name, n))
                 if len(ml) == 0:
-                    s.append(('label', "\N{DOTTED CIRCLE}"))
+                    s.append("\N{DOTTED CIRCLE}")
                 else:
-                    s.append(('label',
-                              ", ".join(["\N{TAPE DRIVE} {}".format(m.hostname)
-                                         for m in ml])))
+                    s.append(", ".join(["\N{TAPE DRIVE} {}".format(m.hostname)
+                                        for m in ml]))
             if len(s) == 0:
-                return [('label', "None")]
+                return ["None"]
             return s
 
-        markup += ["    ", ('label', "Assignments: ")]
+        markup += ["    Assignments: "]
         ad = self.controller.get_assignments(self.charm_class)
         markup += string_for_placement_dict(ad)
 
