@@ -16,7 +16,7 @@
 import logging
 from urwid import (AttrMap, Divider, Padding, Pile, Text, WidgetWrap)
 
-from bundleplacer.maas import satisfies
+from bundleplacer.maas import satisfies, MaasMachineStatus
 
 from bundleplacer.ui.filter_box import FilterBox
 from bundleplacer.ui.simple_machine_widget import SimpleMachineWidget
@@ -43,12 +43,15 @@ class MachinesList(WidgetWrap):
     show_assignments - bool, whether or not to show the assignments
     for each of the machines.
 
+    show_only_ready - bool, only show machines with a ready state.
+
     """
 
     def __init__(self, controller, action, constraints=None,
                  show_hardware=False, title_widgets=None,
                  show_assignments=True,
-                 show_placeholders=True):
+                 show_placeholders=True,
+                 show_only_ready=False):
         self.controller = controller
         self.action = action
         self.machine_widgets = []
@@ -59,6 +62,7 @@ class MachinesList(WidgetWrap):
         self.show_hardware = show_hardware
         self.show_assignments = show_assignments
         self.show_placeholders = show_placeholders
+        self.show_only_ready = show_only_ready
         self.filter_string = ""
         w = self.build_widgets(title_widgets)
         self.update()
@@ -98,6 +102,9 @@ class MachinesList(WidgetWrap):
     def update(self):
         machines = self.controller.machines(
             include_placeholders=self.show_placeholders)
+        if self.show_only_ready:
+            machines = [m for m in machines
+                        if m.status == MaasMachineStatus.READY]
         for mw in self.machine_widgets:
             machine = next((m for m in machines if
                             mw.machine.instance_id == m.instance_id), None)

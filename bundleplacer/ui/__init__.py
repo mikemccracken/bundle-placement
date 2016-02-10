@@ -191,6 +191,7 @@ class MachinesColumn(WidgetWrap):
                                           show_hardware=True,
                                           show_assignments=False,
                                           show_placeholders=False,
+                                          show_only_ready=True,
                                           title_widgets=tw)
         self.machines_list.update()
 
@@ -199,7 +200,8 @@ class MachinesColumn(WidgetWrap):
 
         # placeholders replaced in update() with absolute indexes, so
         # if you change this list, check update().
-        pl = [Text(('body', "Machines {}".format(MetaScroll().get_text()[0])),
+        pl = [Text(('body',
+                    "Ready Machines {}".format(MetaScroll().get_text()[0])),
                    align='center'),
               Divider(),
               Pile([]),         # machines_list
