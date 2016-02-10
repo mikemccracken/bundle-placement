@@ -721,7 +721,8 @@ class BundleWriter:
         return d
 
     def _dict_for_machine(self, mid):
-        cstr = "tags={}".format(mid)
+        machine_tag = mid.split('/')[-2]
+        cstr = "tags={}".format(machine_tag)
         return {"constraints": cstr}
 
     def _get_used_relations(self, services):
