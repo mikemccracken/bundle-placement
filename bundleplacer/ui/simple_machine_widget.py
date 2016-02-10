@@ -88,9 +88,7 @@ class SimpleMachineWidget(WidgetWrap):
         self._w = self.build_widgets()
 
         if not self.machine_is_selectable():
-            markup = ["\N{TAPE DRIVE} {}".format(self.machine.hostname),
-                      " ({})\n".format(self.machine.status)]
-            self.button.set_text([("\n  ")] + markup)
+            self.button.set_text(self.machine.hostname)
             return
 
         if self.is_selected:
@@ -103,8 +101,7 @@ class SimpleMachineWidget(WidgetWrap):
         elif self.machine == self.controller.def_placeholder:
             markup += [('error', "DEFAULT PLACEHOLDER SHOULD NOT SHOW!")]
         else:
-            markup += ["\N{TAPE DRIVE} {}".format(self.machine.hostname),
-                       (" ({})\n".format(self.machine.status))]
+            markup += [self.machine.hostname + "\n"]
             markup += self.hardware_info_markup()
 
             

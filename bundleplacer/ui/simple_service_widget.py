@@ -52,12 +52,8 @@ class SimpleServiceWidget(WidgetWrap):
     def selectable(self):
         return True
 
-    def update_title_markup(self):
-        dn = self.charm_class.display_name
-        self.title_markup = ["\N{GEAR} {}\n".format(dn), ""]
-
     def build_widgets(self):
-        self.update_title_markup()
+        self.title_markup = [self.charm_class.display_name + "\n"]
 
         if self.charm_class.subordinate:
             self.button = SelectableIcon("I AM A SUBORDINATE SERVICE")
