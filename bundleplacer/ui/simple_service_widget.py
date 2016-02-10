@@ -54,13 +54,7 @@ class SimpleServiceWidget(WidgetWrap):
 
     def update_title_markup(self):
         dn = self.charm_class.display_name
-        self.title_markup = ["\N{GEAR} {}".format(dn), ""]
-        summary = self.charm_class.summary
-        pad = ""
-        if self.charm_class.subordinate:
-            pad = "  "
-        if summary != "":
-            self.title_markup.append("\n {}{}\n".format(pad, summary))
+        self.title_markup = ["\N{GEAR} {}\n".format(dn), ""]
 
     def build_widgets(self):
         self.update_title_markup()

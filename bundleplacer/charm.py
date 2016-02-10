@@ -42,7 +42,7 @@ class Charm:
 
     @property
     def summary(self):
-        if self.summary_future.done():
+        if self.summary_future and self.summary_future.done():
             self._summary = self.summary_future.result()
         return self._summary
 

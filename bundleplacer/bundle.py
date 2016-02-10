@@ -85,7 +85,6 @@ def create_charm_class(servicename, service_dict, servicemeta, relations):
 
     charm_name = service_dict['charm'].split('/')[-1]
     charm_name = '-'.join(charm_name.split('-')[:-1])
-    api = CharmStoreAPI()
 
     myrelations = []
     for src, dst in relations:
@@ -94,7 +93,7 @@ def create_charm_class(servicename, service_dict, servicemeta, relations):
 
     charm = Charm(charm_name=servicename,
                   charm_source=service_dict['charm'],
-                  summary_future=api.get_summary(charm_name),
+                  summary_future=None,
                   constraints=servicemeta.get('constraints', {}),
                   depends=servicemeta.get('depends', []),
                   conflicts=servicemeta.get('conflicts', []),
