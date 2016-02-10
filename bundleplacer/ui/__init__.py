@@ -60,7 +60,7 @@ class ServicesColumn(WidgetWrap):
                                           ignore_assigned=False,
                                           ignore_deployed=False,
                                           show_type='all',
-                                          title="Services to Place")
+                                          title=None)
 
         autoplace_func = self.placement_view.do_autoplace
         self.autoplace_button = AttrMap(Button("Auto-place Remaining Services",

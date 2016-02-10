@@ -87,9 +87,11 @@ class ServicesList(WidgetWrap):
         return True
 
     def build_widgets(self):
-        self.service_pile = Pile([Text(self.title),
-                                  Divider(' ')] +
-                                 self.service_widgets)
+        widgets = []
+        if self.title:
+            widgets = [Text(self.title), Divider(' ')]
+        widgets += self.service_widgets
+        self.service_pile = Pile(widgets)
         return self.service_pile
 
     def focus_top_or_next(self):
