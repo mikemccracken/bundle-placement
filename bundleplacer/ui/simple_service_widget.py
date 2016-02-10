@@ -81,23 +81,11 @@ class SimpleServiceWidget(WidgetWrap):
 
         markup = selection_markup + self.title_markup
 
-        state, cons, deps = self.controller.get_charm_state(self.charm_class)
+        p = self.controller.get_assignments(self.charm_class)
+        nr = self.charm_class.required_num_units()
+        info_str = " ({} of {} placed)".format(len(p), nr)
 
-        if state == CharmState.REQUIRED:
-            p = self.controller.get_assignments(self.charm_class)
-            nr = self.charm_class.required_num_units()
-            info_str = " ({} of {} placed)".format(len(p), nr)
-
-            # Add hint to explain why a dep showed up in required
-            if len(p) == 0 and len(deps) > 0:
-                dep_str = ", ".join([c.display_name for c in deps])
-                info_str += " - required by {}".format(dep_str)
-
-            markup.append(info_str)
-        elif state == CharmState.CONFLICTED:
-            raise Exception("CONFLICTED not supported by simple widget")
-        elif state == CharmState.OPTIONAL:
-            pass
+        markup.append(info_str)
 
         def string_for_placement_dict(d):
             s = []
