@@ -174,10 +174,15 @@ class PlacementView(WidgetWrap):
         pass
 
     def handle_tab(self, backward):
-        tabloop = ['header', 'col1', 'col2', 'footer']
+        tabloop = ['headercol1', 'col1', 'headercol2', 'col2', 'footer']
 
-        def goto_header():
+        def goto_header_col1():
             self.frame.focus_position = 'header'
+            self.header_columns.focus_position = 0
+
+        def goto_header_col2():
+            self.frame.focus_position = 'header'
+            self.header_columns.focus_position = 1
 
         def goto_col1():
             self.frame.focus_position = 'body'
@@ -191,13 +196,17 @@ class PlacementView(WidgetWrap):
             self.frame.focus_position = 'footer'
             self.frame.footer.focus_position = 1
 
-        actions = {'header': goto_header,
+        actions = {'headercol1': goto_header_col1,
+                   'headercol2': goto_header_col2,
                    'col1': goto_col1,
                    'col2': goto_col2,
                    'footer': goto_footer}
 
-        if self.frame.focus_position != 'body':
-            cur = self.frame.focus_position
+        if self.frame.focus_position == 'header':
+            cur = ['headercol1',
+                   'headercol2'][self.header_columns.focus_position]
+        elif self.frame.focus_position == 'footer':
+            cur = 'footer'
         else:
             cur = ['col1', 'col2'][self.columns.focus_position]
 
