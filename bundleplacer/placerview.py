@@ -20,16 +20,11 @@ import logging
 from urwid import WidgetWrap
 from bundleplacer.ui import PlacementView
 from ubuntui.ev import EventLoop
-from ubuntui.frame import Frame
+
 
 from bundleplacer.assignmenttype import AssignmentType
 
 log = logging.getLogger('bundleplacer')
-
-
-class PlacerUI(Frame):
-    def __init__(self, placerview):
-        super().__init__(body=placerview)
 
 
 class PlacerView(WidgetWrap):

@@ -25,12 +25,18 @@ from bundleplacer.maas import connect_to_maas
 from bundleplacer.config import Config
 from bundleplacer.controller import BundleWriter, PlacementController
 from bundleplacer.log import setup_logger
-from bundleplacer.placerview import PlacerView, PlacerUI
+from bundleplacer.placerview import PlacerView
 from bundleplacer.fixtures.maas import FakeMaasState
 from ubuntui.ev import EventLoop
 from ubuntui.palette import STYLES
+from ubuntui.anchors import Header, Footer
 
 log = None
+
+
+class PlacerUI(urwid.Frame):
+    def __init__(self, placerview):
+        super().__init__(body=placerview, header=Header(), footer=Footer())
 
 
 def parse_options(argv):
