@@ -18,8 +18,6 @@ from urwid import AttrMap, WidgetWrap, SelectableIcon
 
 from ubuntui.widgets.buttons import MenuSelectButton
 
-from bundleplacer.state import CharmState
-
 
 class SimpleServiceWidget(WidgetWrap):
 

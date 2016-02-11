@@ -127,7 +127,7 @@ class MaasMachine(Machine):
 
     def __hash__(self):
         return hash(self.hostname)
-    
+
     @property
     def hostname(self):
         """ Query hostname reported by MaaS

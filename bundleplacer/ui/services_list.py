@@ -15,8 +15,7 @@
 
 import logging
 
-from urwid import (AttrMap, Divider, Padding, Pile, Text,
-                   WidgetWrap)
+from urwid import Divider, Pile, Text, WidgetWrap
 
 from bundleplacer.maas import satisfies
 from bundleplacer.state import CharmState

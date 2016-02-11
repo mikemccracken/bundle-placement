@@ -70,7 +70,7 @@ class SimpleMachineWidget(WidgetWrap):
         else:
             return AttrMap(self.button, 'text',
                            'button_secondary focus')
-            
+
     def update_machine(self):
         """Refresh with potentially updated machine info from controller.
         Assumes that machine exists - machines going away is handled
@@ -95,7 +95,7 @@ class SimpleMachineWidget(WidgetWrap):
             markup = ["\n\N{BALLOT BOX WITH CHECK} "]
         else:
             markup = ["\n\N{BALLOT BOX} "]
-            
+
         if self.machine == self.controller.sub_placeholder:
             markup += [('error', "SHOULD NOT SHOW PLACEHOLDER FOR SUBS")]
         elif self.machine == self.controller.def_placeholder:
@@ -104,7 +104,6 @@ class SimpleMachineWidget(WidgetWrap):
             markup += [self.machine.hostname + "\n"]
             markup += self.hardware_info_markup()
 
-            
         # ad = self.controller.assignments_for_machine(self.machine)
         # astr = [('label', "  Services: ")]
 

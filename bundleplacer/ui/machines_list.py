@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from urwid import (AttrMap, Divider, Padding, Pile, Text, WidgetWrap)
+from urwid import Divider, Pile, Text, WidgetWrap
 
 from bundleplacer.maas import satisfies, MaasMachineStatus
 
@@ -196,7 +196,7 @@ class MachinesList(WidgetWrap):
             if not isinstance(mw, SimpleMachineWidget):
                 return 'A'
             return keyfunc(mw)
-                
+
         self.machine_pile.contents.sort(key=wrappedkeyfunc)
 
     def focus_prev_or_top(self):
