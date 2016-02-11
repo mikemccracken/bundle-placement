@@ -100,13 +100,13 @@ class ServicesList(WidgetWrap):
         return self._setfocus(top=True)
 
     def _setfocus(self, top):
-        pos = self.service_pile.focus_position
-        if pos + 1 >= len(self.service_widgets) + 2:
-            return False
         try:
-            if top or pos < 2:
-                self.service_pile.focus_position = 2
+            if top:
+                self.service_pile.focus_position = 0
             else:
+                pos = self.service_pile.focus_position
+                if pos + 1 >= len(self.service_widgets):
+                    return False
                 self.service_pile.focus_position = pos + 1
         except IndexError:
             log.debug("caught indexerror in servicescolumn.focus_next")
