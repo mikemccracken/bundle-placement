@@ -51,7 +51,8 @@ class MachinesList(WidgetWrap):
                  show_hardware=False, title_widgets=None,
                  show_assignments=True,
                  show_placeholders=True,
-                 show_only_ready=False):
+                 show_only_ready=False,
+                 show_filter_box=False):
         self.controller = controller
         self.action = action
         self.machine_widgets = []
@@ -63,6 +64,7 @@ class MachinesList(WidgetWrap):
         self.show_assignments = show_assignments
         self.show_placeholders = show_placeholders
         self.show_only_ready = show_only_ready
+        self.show_filter_box = show_filter_box
         self.filter_string = ""
         w = self.build_widgets(title_widgets)
         self.update()
@@ -85,10 +87,11 @@ class MachinesList(WidgetWrap):
 
         self.filter_edit_box = FilterBox(self.handle_filter_change)
 
-        self.machine_pile = Pile([title_widgets,
-                                  Divider(),
-                                  self.filter_edit_box] +
-                                 self.machine_widgets)
+        pile_widgets = [title_widgets, Divider()]
+        if self.show_filter_box:
+            pile_widgets.append(self.filter_edit_box)
+
+        self.machine_pile = Pile(pile_widgets + self.machine_widgets)
         return self.machine_pile
 
     def handle_filter_change(self, edit_button, userdata):

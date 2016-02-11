@@ -15,7 +15,7 @@
 
 import logging
 
-from urwid import (AttrMap, Button, Divider, GridFlow, Pile, Text,
+from urwid import (AttrMap, Divider, GridFlow, Pile, Text,
                    WidgetWrap)
 
 from bundleplacer.assignmenttype import AssignmentType
@@ -24,9 +24,6 @@ from bundleplacer.ui.services_list import ServicesList
 
 
 log = logging.getLogger('bundleplacer')
-
-
-BUTTON_SIZE = 20
 
 
 class ServicesColumn(WidgetWrap):
@@ -55,28 +52,9 @@ class ServicesColumn(WidgetWrap):
                                           show_type='all',
                                           title=None)
 
-        clear_all_func = self.placement_view.do_clear_all
-        self.clear_all_button = AttrMap(Button("Clear All Placements",
-                                               on_press=clear_all_func),
-                                        'button_secondary',
-                                        'button_secondary focus')
-
         self.services_pile = Pile([self.services_list, Divider()])
 
-        self.top_buttons = []
-        self.top_button_grid = GridFlow(self.top_buttons,
-                                        36, 1, 0, 'center')
-
-        pl = [
-            Text(("body", "Services"), align='center'),
-            Divider(),
-            self.top_button_grid, Divider(),
-            self.services_pile, Divider(),
-        ]
-
-        self.main_pile = Pile(pl)
-
-        return self.main_pile
+        return self.services_pile
 
     def focus_top(self):
         self.update()
@@ -84,19 +62,13 @@ class ServicesColumn(WidgetWrap):
 
     def focus_next(self):
         self.update()
-        moved = self.services_list.focus_top_or_next()
-        fsw = self.services_list.focused_service_widget()
-        if not moved or (fsw and fsw.charm_class.subordinate):
-            self.main_pile.focus_position = 2
-            self.top_button_grid.focus_position = 2
+        # moved = self.services_list.focus_top_or_next()
+        # fsw = self.services_list.focused_service_widget()
+        # if not moved or (fsw and fsw.charm_class.subordinate):
+        #    self.top_button_grid.focus_position = 2
 
     def update(self):
         self.services_list.update()
-
-        top_buttons = []
-        top_buttons.append((self.clear_all_button,
-                            self.top_button_grid.options()))
-        self.top_button_grid.contents = top_buttons
 
     def do_reset_to_defaults(self, sender):
         self.placement_controller.set_all_assignments(

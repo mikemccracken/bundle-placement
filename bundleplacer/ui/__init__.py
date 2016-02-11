@@ -14,12 +14,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+from subprocess import Popen, PIPE, TimeoutExpired
 
 from urwid import (AttrMap, Button, Columns, Divider, Filler, Overlay,
-                   Padding, Pile, Text, WidgetWrap)
+                   GridFlow, Frame, Padding, Pile, Text, WidgetWrap)
+
+from ubuntui.views import InfoDialogWidget
+from ubuntui.widgets import MetaScroll
 
 from bundleplacer.assignmenttype import AssignmentType
 
+from bundleplacer.ui.filter_box import FilterBox
 from bundleplacer.ui.services_column import ServicesColumn
 from bundleplacer.ui.machines_column import MachinesColumn
 from bundleplacer.ui.machine_chooser import MachineChooser
@@ -168,7 +173,112 @@ class PlacementView(WidgetWrap):
     def scroll_up(self):
         pass
 
+    def handle_tab(self, backward):
+        tabloop = ['header', 'col1', 'col2', 'footer']
+
+        def goto_header():
+            self.frame.focus_position = 'header'
+
+        def goto_col1():
+            self.frame.focus_position = 'body'
+            self.columns.focus_position = 0
+
+        def goto_col2():
+            self.frame.focus_position = 'body'
+            self.focus_machines_column()
+
+        def goto_footer():
+            self.frame.focus_position = 'footer'
+            self.frame.footer.focus_position = 1
+
+        actions = {'header': goto_header,
+                   'col1': goto_col1,
+                   'col2': goto_col2,
+                   'footer': goto_footer}
+
+        if self.frame.focus_position != 'body':
+            cur = self.frame.focus_position
+        else:
+            cur = ['col1', 'col2'][self.columns.focus_position]
+
+        cur_idx = tabloop.index(cur)
+
+        if backward:
+            next_idx = cur_idx - 1
+        else:
+            next_idx = (cur_idx + 1) % len(tabloop)
+
+        actions[tabloop[next_idx]]()
+
+    def keypress(self, size, key):
+        if key in ['tab', 'shift tab']:
+            self.handle_tab('shift' in key)
+            return key
+        else:
+            return self._w.keypress(size, key)
+
+    def get_services_header(self):
+        self.clear_all_button = AttrMap(Button("Clear All Placements",
+                                               on_press=self.do_clear_all),
+                                        'button_secondary',
+                                        'button_secondary focus')
+
+        self.services_buttons = [self.clear_all_button]
+        self.services_button_grid = GridFlow(self.services_buttons,
+                                             36, 1, 0, 'center')
+
+        self.services_header_pile = Pile([Text(("body", "Services"),
+                                               align='center'),
+                                          Divider(),
+                                          self.services_button_grid])
+        return self.services_header_pile
+
+    def get_machines_header(self, machines_column):
+
+        self.open_maas_button = AttrMap(Button("Open in Browser",
+                                               on_press=self.browse_maas),
+                                        'button_secondary',
+                                        'button_secondary focus')
+
+        bc = self.config.juju_env['bootstrap-config']
+        maasname = "'{}' <{}>".format(bc['name'], bc['maas-server'])
+        maastitle = "Connected to MAAS {}".format(maasname)
+        maastitle_grid = GridFlow([Text(maastitle), self.open_maas_button],
+                                  22, 1, 1, 'center')
+
+        f = machines_column.machines_list.handle_filter_change
+        self.filter_edit_box = FilterBox(f)
+        pl = [Text(('body',
+                    "Ready Machines {}".format(MetaScroll().get_text()[0])),
+                   align='center'),
+              Divider(),
+              maastitle_grid,
+              Divider(),
+              self.filter_edit_box]
+
+        self.machines_header_pile = Pile(pl)
+        return self.machines_header_pile
+
+    def browse_maas(self, sender):
+
+        bc = self.config.juju_env['bootstrap-config']
+        try:
+            p = Popen(["sensible-browser", bc['maas-server']],
+                      stdout=PIPE, stderr=PIPE)
+            outs, errs = p.communicate(timeout=5)
+
+        except TimeoutExpired:
+            # went five seconds without an error, so we assume it's
+            # OK. Don't kill it, just let it go:
+            return
+        e = errs.decode('utf-8')
+        msg = "Error opening '{}' in a browser:\n{}".format(bc['name'], e)
+
+        w = InfoDialogWidget(msg, self.remove_overlay)
+        self.show_overlay(w)
+
     def build_widgets(self):
+
         self.services_column = ServicesColumn(self.display_controller,
                                               self.placement_controller,
                                               self)
@@ -177,18 +287,26 @@ class PlacementView(WidgetWrap):
                                               self.placement_controller,
                                               self)
 
+        cs = [self.get_services_header(),
+              self.get_machines_header(self.machines_column)]
+        self.header_columns = Columns(cs)
+
         self.columns = Columns([self.services_column,
                                 self.machines_column])
 
         self.deploy_button = Button("Deploy", on_press=self.do_deploy)
-
+        self.deploy_button_label = Text("Some charms use default")
         self.main_pile = Pile([Padding(self.columns,
                                        align='center',
-                                       width=('relative', 95)),
-                               AttrMap(self.deploy_button,
-                                       'button_primary',
-                                       'button_primary focus')])
-        return Filler(self.main_pile, valign='top')
+                                       width=('relative', 95))])
+        b = AttrMap(self.deploy_button,
+                    'button_primary',
+                    'button_primary focus')
+        self.frame = Frame(header=self.header_columns,
+                           body=Filler(self.main_pile, valign='top'),
+                           footer=GridFlow([self.deploy_button_label,
+                                            b], 22, 1, 1, 'right'))
+        return self.frame
 
     def update(self):
         self.services_column.update()
@@ -200,7 +318,7 @@ class PlacementView(WidgetWrap):
         remaining = len(unplaced) + len([c for c in all if c.subordinate])
         dmsg = "Deploy (Auto-assigning {}/{} charms)".format(remaining,
                                                              n_total)
-        self.deploy_button.set_label(dmsg)
+        self.deploy_button_label.set_text(dmsg)
 
     def do_clear_all(self, sender):
         self.placement_controller.clear_all_assignments()
