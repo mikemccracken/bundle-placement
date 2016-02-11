@@ -55,10 +55,10 @@ update_version: git-sync-requirements
 ci-test: pyflakes pep8 travis-test
 
 pyflakes:
-	python3 `which pyflakes` bundleplacer bin
+	python3 `which pyflakes` bundleplacer
 
 pep8:
-	pep8 bundleplacer bin
+	pep8 bundleplacer
 
 NOSE_ARGS = -v --with-cover --cover-package=bundleplacer --cover-html test --cover-inclusive bundleplacer
 test: tox
