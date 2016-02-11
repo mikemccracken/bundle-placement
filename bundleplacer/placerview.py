@@ -83,8 +83,6 @@ class PlacerView(WidgetWrap):
             self._selected_machines.remove(m)
         else:
             self._selected_machines.add(m)
-        if len(self._selected_charms) > 0:
-            self.pv.focus_actions_column()
 
     @property
     def selected_machines(self):

@@ -62,12 +62,6 @@ class ServicesColumn(WidgetWrap):
                                           show_type='all',
                                           title=None)
 
-        autoplace_func = self.placement_view.do_autoplace
-        self.autoplace_button = AttrMap(Button("Auto-place Remaining Services",
-                                               on_press=autoplace_func),
-                                        'button_secondary',
-                                        'button_secondary focus')
-
         clear_all_func = self.placement_view.do_clear_all
         self.clear_all_button = AttrMap(Button("Clear All Placements",
                                                on_press=clear_all_func),
@@ -107,30 +101,7 @@ class ServicesColumn(WidgetWrap):
         self.services_list.update()
 
         top_buttons = []
-        unplaced = self.placement_controller.unassigned_undeployed_services()
-        if len(unplaced) == 0:
-            icon = SelectableIcon(" (Auto-place Remaining Services) ")
-            top_buttons.append((AttrMap(icon,
-                                        'disabled_button',
-                                        'disabled_button_focus'),
-                                self.top_button_grid.options()))
-
-        else:
-            top_buttons.append((self.autoplace_button,
-                                self.top_button_grid.options()))
-
         top_buttons.append((self.clear_all_button,
-                            self.top_button_grid.options()))
-        all = self.placement_controller.charm_classes()
-        n_total = len(all)
-        remaining = len(unplaced) + len([c for c in all if c.subordinate])
-        dmsg = "Deploy (Auto-assigning {}/{} charms)".format(remaining,
-                                                             n_total)
-        self.deploy_button = AttrMap(
-            Button(dmsg, on_press=self.placement_view.do_deploy),
-            'button_primary', 'button_primary focus')
-
-        top_buttons.append((self.deploy_button,
                             self.top_button_grid.options()))
         self.top_button_grid.contents = top_buttons
 
@@ -413,27 +384,30 @@ class PlacementView(WidgetWrap):
                                               self.placement_controller,
                                               self)
 
-        self.actions_column = ActionsColumn(self.display_controller,
-                                            self.placement_controller,
-                                            self)
-
         self.columns = Columns([self.services_column,
-                                self.machines_column,
-                                self.actions_column])
+                                self.machines_column])
+
+        self.deploy_button = Button("Deploy", on_press=self.do_deploy)
+
         self.main_pile = Pile([Padding(self.columns,
                                        align='center',
-                                       width=('relative', 95))])
+                                       width=('relative', 95)),
+                               AttrMap(self.deploy_button,
+                                       'button_primary',
+                                       'button_primary focus')])
         return Filler(self.main_pile, valign='top')
 
     def update(self):
         self.services_column.update()
         self.machines_column.update()
-        self.actions_column.update()
 
-    def do_autoplace(self, sender):
-        ok, msg = self.placement_controller.autoassign_unassigned_services()
-        if not ok:
-            self.show_overlay(InfoDialogWidget(msg, self.remove_overlay))
+        unplaced = self.placement_controller.unassigned_undeployed_services()
+        all = self.placement_controller.charm_classes()
+        n_total = len(all)
+        remaining = len(unplaced) + len([c for c in all if c.subordinate])
+        dmsg = "Deploy (Auto-assigning {}/{} charms)".format(remaining,
+                                                             n_total)
+        self.deploy_button.set_label(dmsg)
 
     def do_clear_all(self, sender):
         self.placement_controller.clear_all_assignments()
@@ -455,10 +429,6 @@ class PlacementView(WidgetWrap):
     def focus_machines_column(self):
         self.columns.focus_position = 1
         self.machines_column.focus_prev_or_top()
-
-    def focus_actions_column(self):
-        self.columns.focus_position = 2
-        self.actions_column.focus_top()
 
     def do_show_service_chooser(self, sender, machine):
         self.show_overlay(ServiceChooser(self.placement_controller,
