@@ -268,24 +268,6 @@ class PlacementView(WidgetWrap):
         self.machines_header_pile = Pile(pl)
         return self.machines_header_pile
 
-    def browse_maas(self, sender):
-
-        bc = self.config.juju_env['bootstrap-config']
-        try:
-            p = Popen(["sensible-browser", bc['maas-server']],
-                      stdout=PIPE, stderr=PIPE)
-            outs, errs = p.communicate(timeout=5)
-
-        except TimeoutExpired:
-            # went five seconds without an error, so we assume it's
-            # OK. Don't kill it, just let it go:
-            return
-        e = errs.decode('utf-8')
-        msg = "Error opening '{}' in a browser:\n{}".format(bc['name'], e)
-
-        w = InfoDialogWidget(msg, self.remove_overlay)
-        self.show_overlay(w)
-
     def build_widgets(self):
 
         self.services_column = ServicesColumn(self.display_controller,
@@ -328,6 +310,24 @@ class PlacementView(WidgetWrap):
         dmsg = "Deploy (Auto-assigning {}/{} charms)".format(remaining,
                                                              n_total)
         self.deploy_button_label.set_text(dmsg)
+
+    def browse_maas(self, sender):
+
+        bc = self.config.juju_env['bootstrap-config']
+        try:
+            p = Popen(["sensible-browser", bc['maas-server']],
+                      stdout=PIPE, stderr=PIPE)
+            outs, errs = p.communicate(timeout=5)
+
+        except TimeoutExpired:
+            # went five seconds without an error, so we assume it's
+            # OK. Don't kill it, just let it go:
+            return
+        e = errs.decode('utf-8')
+        msg = "Error opening '{}' in a browser:\n{}".format(bc['name'], e)
+
+        w = InfoDialogWidget(msg, self.remove_overlay)
+        self.show_overlay(w)
 
     def do_clear_all(self, sender):
         self.placement_controller.clear_all_assignments()
