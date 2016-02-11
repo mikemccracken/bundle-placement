@@ -89,7 +89,7 @@ class PlacerView(WidgetWrap):
             self._selected_charms.remove(charm_class)
         else:
             self._selected_charms.add(charm_class)
-        self.pv.focus_machines_column()
+            self.pv.focus_machines_column()
 
     @property
     def selected_charms(self):
