@@ -50,7 +50,8 @@ class MachinesColumn(WidgetWrap):
                                           show_hardware=True,
                                           show_assignments=False,
                                           show_placeholders=False,
-                                          show_only_ready=True)
+                                          show_only_ready=True,
+                                          title_widgets=[])
 
         self.machines_list.update()
 

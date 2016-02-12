@@ -83,11 +83,11 @@ class MachinesList(WidgetWrap):
             else:
                 cstr = ""
 
-            title_widgets = Text("Machines" + cstr, align='center')
+            title_widgets = [Text("Machines" + cstr, align='center')]
 
         self.filter_edit_box = FilterBox(self.handle_filter_change)
 
-        pile_widgets = [title_widgets, Divider()]
+        pile_widgets = title_widgets + [Divider()]
         if self.show_filter_box:
             pile_widgets.append(self.filter_edit_box)
 
