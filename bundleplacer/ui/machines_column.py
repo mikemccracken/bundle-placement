@@ -15,8 +15,7 @@
 
 import logging
 
-from urwid import (AttrMap, Button, Columns, Divider, Padding,
-                   Pile, Text, WidgetWrap)
+from urwid import Divider, Pile, Text, WidgetWrap
 
 from bundleplacer.ui.machines_list import MachinesList
 

@@ -15,8 +15,7 @@
 
 import logging
 
-from urwid import (AttrMap, Divider, GridFlow, Pile, Text,
-                   WidgetWrap)
+from urwid import Divider, Pile, WidgetWrap
 
 from bundleplacer.assignmenttype import AssignmentType
 
