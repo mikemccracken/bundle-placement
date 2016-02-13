@@ -102,8 +102,7 @@ class SimpleMachineWidget(WidgetWrap):
                               (Divider(), self.pile.options())]
 
     def update_unselected(self):
-        markup = ["\N{BALLOT BOX} "]
-        markup += self.info_markup()
+        markup = self.info_markup()
         self.button.set_label(markup)
         self.pile.contents = [(AttrMap(self.button, 'text',
                                        'button_secondary focus'),
