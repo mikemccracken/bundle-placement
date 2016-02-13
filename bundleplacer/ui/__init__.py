@@ -22,8 +22,6 @@ from urwid import (AttrMap, Button, Columns, Divider, Filler, Overlay,
 from ubuntui.views import InfoDialogWidget
 from ubuntui.widgets import MetaScroll
 
-from bundleplacer.assignmenttype import AssignmentType
-
 from bundleplacer.ui.filter_box import FilterBox
 from bundleplacer.ui.services_column import ServicesColumn
 from bundleplacer.ui.machines_column import MachinesColumn
@@ -35,114 +33,6 @@ log = logging.getLogger('bundleplacer')
 
 
 BUTTON_SIZE = 20
-
-
-class ActionsColumn(WidgetWrap):
-
-    """Displays dynamic list of buttons to place selected services on
-    selected machines.
-
-    """
-
-    def __init__(self, display_controller, placement_controller,
-                 placement_view):
-        self.display_controller = display_controller
-        self.placement_controller = placement_controller
-        self.placement_view = placement_view
-        self.showing_buttons = False
-        w = self.build_widgets()
-        super().__init__(w)
-        self.update()
-
-    def selectable(self):
-        return True
-
-    def build_widgets(self):
-        self.info_label = Text("", align='center')
-        pl = [
-            Text(("body", "Container Type"), align='center'),
-            Divider(),
-            self.info_label,
-            Divider()
-        ]
-        self.action_buttons = []
-        self.update_buttons()
-
-        self.main_pile = Pile(pl)
-
-        return self.main_pile
-
-    def update(self):
-        selected_charms = self.display_controller.selected_charms
-
-        if len(selected_charms) == 0:
-            self.showing_buttons = False
-            charmstr = "No Charms Selected"
-        else:
-            charmstr = "Charms: " + ", ".join([m.charm_name
-                                               for m in selected_charms])
-
-        selected_machines = self.display_controller.selected_machines
-
-        if len(selected_machines) == 0:
-            self.showing_buttons = False
-            machinestr = "No Machines Selected"
-        else:
-            machinestr = "Machines: " + ", ".join([m.hostname for m
-                                                   in selected_machines])
-
-        self.info_label.set_text(("info",
-                                  "Select container type to place:\n"
-                                  "{}\n{}".format(charmstr, machinestr)))
-
-        if len(selected_charms) == 0 or len(selected_machines) == 0:
-            self.main_pile.contents[-1] = (Divider(),
-                                           self.main_pile.options())
-            self.showing_buttons = False
-            return
-
-        button_count_changed = self.update_buttons()
-        # only change the pile if we were previously not showing it:
-        if not self.showing_buttons or button_count_changed:
-            self.main_pile.contents[-1] = (Pile(self.action_buttons),
-                                           self.main_pile.options())
-            self.showing_buttons = True
-
-    def update_buttons(self):
-        all_actions = [(AssignmentType.BareMetal,
-                        'Add as Bare Metal',
-                        self.display_controller.do_select_baremetal),
-                       (AssignmentType.LXC,
-                        'Add as LXC',
-                        self.display_controller.do_select_lxc),
-                       (AssignmentType.KVM,
-                        'Add as KVM',
-                        self.display_controller.do_select_kvm)]
-
-        selected_charms = self.display_controller.selected_charms
-
-        allowed_sets = [set(sc.allowed_assignment_types)
-                        for sc in selected_charms]
-        allowed_types = set([atype for atype, _, _ in all_actions])
-        allowed_types = allowed_types.intersection(*allowed_sets)
-
-        prev_len = len(self.action_buttons)
-        self.action_buttons = [AttrMap(Button(label, on_press=func),
-                                       'button_secondary',
-                                       'button_secondary focus')
-                               for atype, label, func in all_actions
-                               if atype in allowed_types]
-
-        return len(self.action_buttons) != prev_len
-
-    def focus_top(self):
-        self.update()
-        try:
-            newpos = len(self.main_pile.contents) - 1
-            self.main_pile.focus_position = newpos
-        except IndexError:
-            log.debug("caught indexerror?")
-            pass
 
 
 class PlacementView(WidgetWrap):

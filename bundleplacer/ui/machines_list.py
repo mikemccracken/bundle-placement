@@ -47,14 +47,14 @@ class MachinesList(WidgetWrap):
 
     """
 
-    def __init__(self, controller, action, constraints=None,
-                 show_hardware=False, title_widgets=None,
-                 show_assignments=True,
-                 show_placeholders=True,
-                 show_only_ready=False,
+    def __init__(self, controller, display_controller, select_action,
+                 constraints=None, show_hardware=False,
+                 title_widgets=None, show_assignments=True,
+                 show_placeholders=True, show_only_ready=False,
                  show_filter_box=False):
         self.controller = controller
-        self.action = action
+        self.display_controller = display_controller
+        self.select_action = select_action
         self.machine_widgets = []
         if constraints is None:
             self.constraints = {}
@@ -87,11 +87,13 @@ class MachinesList(WidgetWrap):
 
         self.filter_edit_box = FilterBox(self.handle_filter_change)
 
-        pile_widgets = title_widgets + [Divider()]
-        if self.show_filter_box:
-            pile_widgets.append(self.filter_edit_box)
+        header_widgets = title_widgets + [Divider()]
 
-        self.machine_pile = Pile(pile_widgets + self.machine_widgets)
+        if self.show_filter_box:
+            header_widgets.append(self.filter_edit_box)
+
+        self.header_padding = len(header_widgets)
+        self.machine_pile = Pile(header_widgets + self.machine_widgets)
         return self.machine_pile
 
     def handle_filter_change(self, edit_button, userdata):
@@ -151,8 +153,9 @@ class MachinesList(WidgetWrap):
         self.sort_machine_widgets()
 
     def add_machine_widget(self, machine):
-        mw = SimpleMachineWidget(machine, self.action,
+        mw = SimpleMachineWidget(machine, self.select_action,
                                  self.controller,
+                                 self.display_controller,
                                  self.show_assignments)
         self.machine_widgets.append(mw)
         options = self.machine_pile.options()
@@ -205,7 +208,7 @@ class MachinesList(WidgetWrap):
     def focus_prev_or_top(self):
         self.update()
         try:
-            if self.machine_pile.focus_position <= 2:
-                self.machine_pile.focus_position = 3
+            if self.machine_pile.focus_position <= self.header_padding:
+                self.machine_pile.focus_position = self.header_padding
         except IndexError:
             log.debug("index error in machines_list focus_top")

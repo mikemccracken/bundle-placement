@@ -15,61 +15,55 @@
 
 import logging
 
-from urwid import AttrMap, WidgetWrap, SelectableIcon
+from urwid import AttrMap, Button, Divider, GridFlow, Pile, Text, WidgetWrap
 
-from bundleplacer.maas import MaasMachineStatus
 from ubuntui.widgets.buttons import MenuSelectButton
+
+from bundleplacer.assignmenttype import AssignmentType
 
 log = logging.getLogger('bundleplacer')
 
 
 class SimpleMachineWidget(WidgetWrap):
 
-    """A widget displaying a machine. Simplified.
+    """A widget displaying a machine. When selected, shows action buttons
+    for placement types.
 
     machine - the machine to display
 
-    action - action function to call. passed this widget.
+    select_action - action function to call when (un)selected. passed
+    this widget.
 
     controller - a PlacementController instance
 
     show_assignments - display info about which charms are assigned
     and what assignment type (LXC, KVM, etc) they have.
+
     """
 
-    def __init__(self, machine, action, controller, show_assignments=True):
+    def __init__(self, machine, select_action, controller,
+                 display_controller, show_assignments=True):
         self.machine = machine
-        self.action = action
+        self.select_action = select_action
         self.controller = controller
+        self.display_controller = display_controller
         self.show_assignments = show_assignments
         self.is_selected = False
         w = self.build_widgets()
-        self.update()
         super().__init__(w)
+        self.update()
 
     def selectable(self):
         return True
 
-    def hardware_info_markup(self):
-        m = self.machine
-        return ['arch: {}  '.format(m.arch),
-                'cores: {}  '.format(m.cpu_cores),
-                'mem: {}  '.format(m.mem),
-                'storage: {}'.format(m.storage)]
-
     def build_widgets(self):
 
-        if not self.machine_is_selectable():
-            self.button = SelectableIcon("I am an unavailable machine")
-        else:
-            self.button = MenuSelectButton("I AM A MACHINE", self.do_action)
+        self.button = MenuSelectButton("I AM A MACHINE", self.do_select)
+        self.action_button_grid = GridFlow([], 22, 1, 1, 'center')
+        self.action_buttons = []
 
-        if self.is_selected:
-            return AttrMap(self.button, 'deploy_highlight_start',
-                           'button_secondary focus')
-        else:
-            return AttrMap(self.button, 'text',
-                           'button_secondary focus')
+        self.pile = Pile([self.button])
+        return self.pile
 
     def update_machine(self):
         """Refresh with potentially updated machine info from controller.
@@ -80,65 +74,108 @@ class SimpleMachineWidget(WidgetWrap):
                              if m.instance_id == self.machine.instance_id),
                             None)
 
-    def machine_is_selectable(self):
-        return self.machine.status == MaasMachineStatus.READY
-
     def update(self):
         self.update_machine()
-        self._w = self.build_widgets()
-
-        if not self.machine_is_selectable():
-            self.button.set_text(self.machine.hostname)
-            return
+        self.update_action_buttons()
 
         if self.is_selected:
-            markup = ["\n\N{BALLOT BOX WITH CHECK} "]
+            self.update_selected()
         else:
-            markup = ["\n\N{BALLOT BOX} "]
+            self.update_unselected()
 
-        if self.machine == self.controller.sub_placeholder:
-            markup += [('error', "SHOULD NOT SHOW PLACEHOLDER FOR SUBS")]
-        elif self.machine == self.controller.def_placeholder:
-            markup += [('error', "DEFAULT PLACEHOLDER SHOULD NOT SHOW!")]
-        else:
-            markup += [self.machine.hostname + "\n"]
-            markup += self.hardware_info_markup()
+    def info_markup(self):
+        m = self.machine
+        return [self.machine.hostname + "\n",
+                'arch: {}  '.format(m.arch),
+                'cores: {}  '.format(m.cpu_cores),
+                'mem: {}  '.format(m.mem),
+                'storage: {}'.format(m.storage)]
 
-        # ad = self.controller.assignments_for_machine(self.machine)
-        # astr = [('label', "  Services: ")]
+    def update_selected(self):
+        charmnames = ", ".join([c.charm_name for c in
+                                self.display_controller.selected_charms])
+        msg = Text("  Add {} to {}:".format(charmnames,
+                                            self.machine.hostname))
+        self.pile.contents = [(msg, self.pile.options()),
+                              (self.action_button_grid,
+                               self.pile.options()),
+                              (Divider(), self.pile.options())]
 
-        # for atype, al in ad.items():
-        #     n = len(al)
-        #     if n == 1:
-        #         pl_s = ""
-        #     else:
-        #         pl_s = "s"
-        #     if atype == AssignmentType.BareMetal:
-        #         astr.append(('label', "\n    {} service{}"
-        #                      " on Bare Metal: ".format(n, pl_s)))
-        #     else:
-        #         astr.append(('label', "\n    {} "
-        #                      "{}{}: ".format(n, atype.name, pl_s)))
-        #     if n == 0:
-        #         astr.append("\N{EMPTY SET}")
-        #     else:
-        #         astr.append(", ".join(["\N{GEAR} {}".format(c.display_name)
-        #                                for c in al]))
-
-        # if self.machine == self.controller.sub_placeholder:
-        #     assignments_text = ''
-        #     for _, al in ad.items():
-        #         charm_txts = ["\N{GEAR} {}".format(c.display_name)
-        #                       for c in al]
-        #         assignments_text += ", ".join(charm_txts)
-        # else:
-        #     assignments_text = astr
-
-        # self.assignments_widget.set_text(assignments_text)
-
+    def update_unselected(self):
+        markup = ["\N{BALLOT BOX} "]
+        markup += self.info_markup()
         self.button.set_label(markup)
+        self.pile.contents = [(AttrMap(self.button, 'text',
+                                       'button_secondary focus'),
+                               self.pile.options()),
+                              (Divider(), self.pile.options())]
 
-    def do_action(self, sender):
-        self.is_selected = not self.is_selected
+    def update_action_buttons(self):
+
+        all_actions = [(AssignmentType.BareMetal,
+                        'Add as Bare Metal',
+                        self.select_baremetal),
+                       (AssignmentType.LXC,
+                        'Add as LXC',
+                        self.select_lxc),
+                       (AssignmentType.KVM,
+                        'Add as KVM',
+                        self.select_kvm)]
+
+        selected_charms = self.display_controller.selected_charms
+
+        allowed_sets = [set(sc.allowed_assignment_types)
+                        for sc in selected_charms]
+        allowed_types = set([atype for atype, _, _ in all_actions])
+        allowed_types = allowed_types.intersection(*allowed_sets)
+
+        # + 1 for the cancel button:
+        if len(self.action_buttons) == len(allowed_types) + 1:
+            return
+
+        self.action_buttons = [AttrMap(Button(label, on_press=func),
+                                       'button_secondary',
+                                       'button_secondary focus')
+                               for atype, label, func in all_actions
+                               if atype in allowed_types]
+        self.action_buttons.append(AttrMap(Button("Cancel",
+                                                  on_press=self.do_cancel),
+                                           'button_secondary',
+                                           'button_secondary focus'))
+
+        opts = self.action_button_grid.options()
+        self.action_button_grid.contents = [(b, opts) for b in
+                                            self.action_buttons]
+
+    def do_select(self, sender):
+        if len(self.display_controller.selected_charms) == 0:
+            return
+        self.is_selected = True
         self.update()
-        self.action(self)
+        self.select_action(self)
+        self.pile.focus_position = 1
+        self.action_button_grid.focus_position = 0
+
+    def do_cancel(self, sender):
+        self.is_selected = False
+        self.update()
+        self.select_action(self)
+        self.pile.focus_position = 0
+
+    def _do_select_assignment(self, atype):
+        {AssignmentType.BareMetal:
+         self.display_controller.do_select_baremetal,
+         AssignmentType.LXC:
+         self.display_controller.do_select_lxc,
+         AssignmentType.KVM:
+         self.display_controller.do_select_kvm}[atype]()
+        self.pile.focus_position = 0
+
+    def select_baremetal(self, sender):
+        self._do_select_assignment(AssignmentType.BareMetal)
+
+    def select_lxc(self, sender):
+        self._do_select_assignment(AssignmentType.LXC)
+
+    def select_kvm(self, sender):
+        self._do_select_assignment(AssignmentType.KVM)
