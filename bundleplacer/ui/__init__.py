@@ -22,6 +22,7 @@ from urwid import (AttrMap, Button, Columns, Divider, Filler, Overlay,
 from ubuntui.views import InfoDialogWidget
 from ubuntui.widgets import MetaScroll
 
+from bundleplacer.ui.charmstore_search_widget import CharmStoreSearchWidget
 from bundleplacer.ui.filter_box import FilterBox
 from bundleplacer.ui.services_column import ServicesColumn
 from bundleplacer.ui.machines_column import MachinesColumn
@@ -122,6 +123,8 @@ class PlacementView(WidgetWrap):
                                         'button_secondary',
                                         'button_secondary focus')
 
+        self.charm_search_widget = CharmStoreSearchWidget(self.do_add_charm)
+
         self.services_buttons = [self.clear_all_button]
         self.services_button_grid = GridFlow(self.services_buttons,
                                              36, 1, 0, 'center')
@@ -129,7 +132,9 @@ class PlacementView(WidgetWrap):
         self.services_header_pile = Pile([Text(("body", "Services"),
                                                align='center'),
                                           Divider(),
-                                          self.services_button_grid])
+                                          self.services_button_grid,
+                                          Divider(),
+                                          self.charm_search_widget])
         return self.services_header_pile
 
     def get_machines_header(self, machines_column):
@@ -170,10 +175,10 @@ class PlacementView(WidgetWrap):
 
         cs = [self.get_services_header(),
               self.get_machines_header(self.machines_column)]
-        self.header_columns = Columns(cs)
+        self.header_columns = Columns(cs, dividechars=2)
 
         self.columns = Columns([self.services_column,
-                                self.machines_column])
+                                self.machines_column], dividechars=2)
 
         self.deploy_button = Button("Deploy", on_press=self.do_deploy)
         self.deploy_button_label = Text("Some charms use default")
@@ -192,6 +197,7 @@ class PlacementView(WidgetWrap):
     def update(self):
         self.services_column.update()
         self.machines_column.update()
+        self.charm_search_widget.update()
 
         unplaced = self.placement_controller.unassigned_undeployed_services()
         all = self.placement_controller.charm_classes()
@@ -221,6 +227,9 @@ class PlacementView(WidgetWrap):
 
     def do_clear_all(self, sender):
         self.placement_controller.clear_all_assignments()
+
+    def do_add_charm(self, charm_name, charm_dict):
+        self.placement_controller.add_new_charm(charm_name, charm_dict)
 
     def do_clear_machine(self, sender, machine):
         self.placement_controller.clear_assignments(machine)

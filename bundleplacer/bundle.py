@@ -150,6 +150,11 @@ class Bundle:
         if 'services' not in self._bundle.keys():
             raise Exception("Invalid Bundle.")
 
+    def add_new_charm(self, charm_name, charm_dict):
+        new_dict = {'charm': charm_dict['Id'],
+                    'num_units': 1}
+        self._bundle['services'][charm_name] = new_dict
+
     @property
     def charm_classes(self):
         charm_classes = []
