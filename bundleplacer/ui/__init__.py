@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from enum import Enum
 import logging
 from subprocess import Popen, PIPE, TimeoutExpired
 
@@ -26,14 +27,21 @@ from bundleplacer.ui.charmstore_search_widget import CharmStoreSearchWidget
 from bundleplacer.ui.filter_box import FilterBox
 from bundleplacer.ui.services_column import ServicesColumn
 from bundleplacer.ui.machines_column import MachinesColumn
+from bundleplacer.ui.relations_column import RelationsColumn
 from bundleplacer.ui.machine_chooser import MachineChooser
 from bundleplacer.ui.service_chooser import ServiceChooser
+from bundleplacer.ui.relation_editor import RelationEditWidget
 
 
 log = logging.getLogger('bundleplacer')
 
 
 BUTTON_SIZE = 20
+
+
+class UIState(Enum):
+    PLACEMENT_EDITOR = 0
+    RELATION_EDITOR = 1
 
 
 class PlacementView(WidgetWrap):
@@ -48,15 +56,18 @@ class PlacementView(WidgetWrap):
     """
 
     def __init__(self, display_controller, placement_controller,
-                 config, do_deploy_cb):
+                 config, do_deploy_cb, initial_state=UIState.PLACEMENT_EDITOR):
         self.display_controller = display_controller
         self.placement_controller = placement_controller
         self.config = config
         self.do_deploy_cb = do_deploy_cb
-
+        self.state = initial_state
+        self.prev_state = None
         w = self.build_widgets()
         super().__init__(w)
         self.reset_selections(top=True)  # calls self.update
+        ### TEMP
+        self.charm_search_widget.editbox.set_edit_text("wordpress")
 
     def scroll_down(self):
         pass
@@ -69,7 +80,10 @@ class PlacementView(WidgetWrap):
         self.frame.footer.focus_position = 1
 
     def handle_tab(self, backward):
-        tabloop = ['headercol1', 'col1', 'headercol2', 'col2', 'footer']
+        if self.state == UIState.PLACEMENT_EDITOR:
+            tabloop = ['headercol1', 'col1', 'headercol2', 'col2', 'footer']
+        else:
+            tabloop = ['headercol1', 'col1', 'col2', 'footer']
 
         def goto_header_col1():
             self.frame.focus_position = 'header'
@@ -85,7 +99,10 @@ class PlacementView(WidgetWrap):
 
         def goto_col2():
             self.frame.focus_position = 'body'
-            self.focus_machines_column()
+            if self.state == UIState.PLACEMENT_EDITOR:
+                self.focus_machines_column()
+            else:
+                self.focus_relations_column()
 
         actions = {'headercol1': goto_header_col1,
                    'headercol2': goto_header_col2,
@@ -163,6 +180,9 @@ class PlacementView(WidgetWrap):
         self.machines_header_pile = Pile(pl)
         return self.machines_header_pile
 
+    def get_relations_header(self):
+        return Text("RELATIONS!")
+
     def build_widgets(self):
 
         self.services_column = ServicesColumn(self.display_controller,
@@ -172,9 +192,16 @@ class PlacementView(WidgetWrap):
         self.machines_column = MachinesColumn(self.display_controller,
                                               self.placement_controller,
                                               self)
+        self.relations_column = RelationsColumn(self.display_controller,
+                                                self.placement_controller,
+                                                self)
+
+        self.machines_header = self.get_machines_header(self.machines_column)
+        self.relations_header = self.get_relations_header()
 
         cs = [self.get_services_header(),
-              self.get_machines_header(self.machines_column)]
+              self.machines_header]
+
         self.header_columns = Columns(cs, dividechars=2)
 
         self.columns = Columns([self.services_column,
@@ -182,21 +209,41 @@ class PlacementView(WidgetWrap):
 
         self.deploy_button = Button("Deploy", on_press=self.do_deploy)
         self.deploy_button_label = Text("Some charms use default")
-        self.main_pile = Pile([Padding(self.columns,
-                                       align='center',
-                                       width=('relative', 95))])
+        self.placement_edit_body = Filler(Padding(self.columns,
+                                                  align='center',
+                                                  width=('relative', 95)),
+                                          valign='top')
         b = AttrMap(self.deploy_button,
                     'button_primary',
                     'button_primary focus')
+
         self.frame = Frame(header=self.header_columns,
-                           body=Filler(self.main_pile, valign='top'),
+                           body=self.placement_edit_body,
                            footer=GridFlow([self.deploy_button_label,
                                             b], 22, 1, 1, 'right'))
         return self.frame
 
     def update(self):
-        self.services_column.update()
-        self.machines_column.update()
+        if self.prev_state != self.state:
+            h_opts = self.header_columns.options()
+            c_opts = self.columns.options()
+            
+            if self.state == UIState.PLACEMENT_EDITOR:
+                self.header_columns.contents[-1] = (self.machines_header,
+                                                    h_opts)
+                self.columns[-1] = (self.machines_column, c_opts)
+
+            elif self.state == UIState.RELATION_EDITOR:
+                self.header_columns.contents[-1] = (self.relations_header,
+                                                    h_opts)
+                self.columns[-1] = (self.relations_column, c_opts)
+            self.prev_state = self.state
+
+        if self.state == UIState.PLACEMENT_EDITOR:
+            self.services_column.update()
+            self.machines_column.update()
+        elif self.state == UIState.RELATION_EDITOR:
+            pass  # self.relation_edit_widget.update()
         self.charm_search_widget.update()
 
         unplaced = self.placement_controller.unassigned_undeployed_services()
@@ -230,6 +277,7 @@ class PlacementView(WidgetWrap):
 
     def do_add_charm(self, charm_name, charm_dict):
         self.placement_controller.add_new_charm(charm_name, charm_dict)
+        self.update()
 
     def do_clear_machine(self, sender, machine):
         self.placement_controller.clear_assignments(machine)
@@ -248,6 +296,10 @@ class PlacementView(WidgetWrap):
     def focus_machines_column(self):
         self.columns.focus_position = 1
         self.machines_column.focus_prev_or_top()
+
+    def focus_relations_column(self):
+        self.columns.focus_position = 1
+        self.relations_column.focus_prev_or_top()
 
     def do_show_service_chooser(self, sender, machine):
         self.show_overlay(ServiceChooser(self.placement_controller,
