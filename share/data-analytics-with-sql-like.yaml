@@ -30,7 +30,7 @@ services:
       gui-x: '1000'
       gui-y: '0'
     charm: cs:trusty/ntp-14
-    num_units: 0
+
 series: trusty
 relations:
 - - hdphive:namenode
