@@ -93,8 +93,7 @@ class SimpleServiceWidget(WidgetWrap):
                 if len(ml) == 0:
                     s.append("\N{DOTTED CIRCLE}")
                 else:
-                    s.append(", ".join(["\N{TAPE DRIVE} {}".format(m.hostname)
-                                        for m in ml]))
+                    s.append(", ".join([m.hostname for m in ml]))
             if len(s) == 0:
                 return ["None"]
             return s
