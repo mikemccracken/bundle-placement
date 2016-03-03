@@ -30,7 +30,6 @@ from bundleplacer.ui.machines_column import MachinesColumn
 from bundleplacer.ui.relations_column import RelationsColumn
 from bundleplacer.ui.machine_chooser import MachineChooser
 from bundleplacer.ui.service_chooser import ServiceChooser
-from bundleplacer.ui.relation_editor import RelationEditWidget
 
 
 log = logging.getLogger('bundleplacer')
