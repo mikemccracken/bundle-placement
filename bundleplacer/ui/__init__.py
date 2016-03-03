@@ -276,7 +276,10 @@ class PlacementView(WidgetWrap):
 
     def do_add_charm(self, charm_name, charm_dict):
         self.placement_controller.add_new_charm(charm_name, charm_dict)
+        self.frame.focus_position = 'body'
+        self.columns.focus_position = 0
         self.update()
+        self.services_column.select_charm(charm_name)
 
     def do_clear_machine(self, sender, machine):
         self.placement_controller.clear_assignments(machine)

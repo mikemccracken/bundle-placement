@@ -252,3 +252,11 @@ class ServicesList(WidgetWrap):
             return keyfunc(mw)
 
         self.service_pile.contents.sort(key=wrappedkeyfunc)
+
+    def select_charm(self, charm_name):
+        idx = 0
+        for w, opts in self.service_pile.contents:
+            if w.charm_class.charm_name == charm_name:
+                self.service_pile.focus_position = idx
+                return
+            idx += 1
