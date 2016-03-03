@@ -267,16 +267,7 @@ class RelationsColumn(WidgetWrap):
         for w, _ in self.their_relations.contents[2:]:
             w.update()
 
-    def focus_mine(self):
-        self.pile.focus_position = len(self.pile.contents) - 1
-        self.columns.focus_position = 0
-        if len(self.my_relations.contents) <= 2:
-            return
-        pos = self.my_relations.focus_position
-        if pos < 2:
-            self.my_relations.focus_position = 2
-
-    def focus_theirs(self):
+    def focus_prev_or_top(self):
         self.pile.focus_position = len(self.pile.contents) - 1
         self.columns.focus_position = 1
         if len(self.their_relations.contents) <= 2:
@@ -308,8 +299,3 @@ class RelationsColumn(WidgetWrap):
                                      self.selected_relation_name,
                                      their_charm_name,
                                      their_relation_name)
-
-    # def keypress(self, size, key):
-    #     q.q(key)
-    #     super(RelationEditWidget, self).keypress(size, key)
-    #     self.update()

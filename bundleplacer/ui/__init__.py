@@ -231,12 +231,12 @@ class PlacementView(WidgetWrap):
             if self.state == UIState.PLACEMENT_EDITOR:
                 self.header_columns.contents[-1] = (self.machines_header,
                                                     h_opts)
-                self.columns[-1] = (self.machines_column, c_opts)
+                self.columns.contents[-1] = (self.machines_column, c_opts)
 
             elif self.state == UIState.RELATION_EDITOR:
                 self.header_columns.contents[-1] = (self.relations_header,
                                                     h_opts)
-                self.columns[-1] = (self.relations_column, c_opts)
+                self.columns.contents[-1] = (self.relations_column, h_opts)
             self.prev_state = self.state
 
         if self.state == UIState.PLACEMENT_EDITOR:
@@ -300,6 +300,16 @@ class PlacementView(WidgetWrap):
     def focus_relations_column(self):
         self.columns.focus_position = 1
         self.relations_column.focus_prev_or_top()
+
+    def edit_placement(self):
+        self.state = UIState.PLACEMENT_EDITOR
+        self.update()
+        self.focus_machines_column()
+
+    def edit_relations(self):
+        self.state = UIState.RELATION_EDITOR
+        self.update()
+        self.focus_relations_column()
 
     def do_show_service_chooser(self, sender, machine):
         self.show_overlay(ServiceChooser(self.placement_controller,
