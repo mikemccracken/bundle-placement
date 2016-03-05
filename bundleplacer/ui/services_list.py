@@ -120,7 +120,8 @@ class ServicesList(WidgetWrap):
 
     def find_service_widget(self, cc):
         return next((sw for sw in self.service_widgets if
-                     sw.charm_class.charm_name == cc.charm_name), None)
+                     sw.charm_class.service_name == cc.service_name),
+                    None)
 
     def update(self):
 
@@ -241,7 +242,7 @@ class ServicesList(WidgetWrap):
             if cc.subordinate:
                 skey = 'z'
             else:
-                skey = cc.charm_name
+                skey = cc.service_name
             return skey
         self.service_widgets.sort(key=keyfunc)
 
@@ -253,10 +254,10 @@ class ServicesList(WidgetWrap):
 
         self.service_pile.contents.sort(key=wrappedkeyfunc)
 
-    def select_charm(self, charm_name):
+    def select_service(self, service_name):
         idx = 0
         for w, opts in self.service_pile.contents:
-            if w.charm_class.charm_name == charm_name:
+            if w.charm_class.service_name == service_name:
                 self.service_pile.focus_position = idx
                 return
             idx += 1
