@@ -16,8 +16,8 @@
 from enum import Enum
 
 
-from urwid import (AttrMap, Divider, GridFlow, Pile, WidgetWrap,
-                   Padding, Text)
+from urwid import (AttrMap, Divider, Pile, WidgetWrap,
+                   Padding, Text, Columns)
 
 from ubuntui.widgets.buttons import MenuSelectButton
 
@@ -69,7 +69,6 @@ class SimpleServiceWidget(WidgetWrap):
         else:
             self.button = MenuSelectButton("I AM A SERVICE", self.do_select)
 
-        self.action_button_grid = GridFlow([], 22, 1, 1, 'right')
         self.action_buttons = []
 
         self.pile = Pile([self.button])
@@ -157,9 +156,9 @@ class SimpleServiceWidget(WidgetWrap):
             'button_secondary',
             'button_secondary focus'))
 
-        opts = self.action_button_grid.options()
-        self.action_button_grid.contents = [(b, opts) for b in
-                                            self.action_buttons]
+        self.action_button_grid = Columns([b for b in
+                                           self.action_buttons],
+                                          dividechars=1)
 
     def do_select(self, sender):
         self.display_controller.clear_selections()
