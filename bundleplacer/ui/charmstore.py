@@ -100,3 +100,39 @@ class CharmStoreSearchWidget(WidgetWrap):
 
     def do_add_charm(self, sender):
         self.add_cb(self.search_text, self._search_result)
+
+
+class CharmstoreColumn(WidgetWrap):
+    def __init__(self, display_controller, placement_controller,
+                 placement_view):
+        self.placement_controller = placement_controller
+        self.display_controller = display_controller
+        self.placement_view = placement_view
+        w = self.build_widgets()
+        super().__init__(w)
+        self.update()
+
+    def build_widgets(self):
+        self.title = Text('')
+        self.relation_widgets = []
+
+        self.pile = Pile([Divider(), self.title] + self.relation_widgets)
+        return self.pile
+
+    def refresh(self):
+        self.set_service(self.service)
+
+    def set_service(self, service):
+        self.service = service
+        self.add_charm(service.charm_name)
+        self.pile.contents = self.pile.contents[:2]
+        self.provides = set()
+        self.requires = set()
+        self.relation_widgets = []
+
+    def update(self):
+        if self.service is None:
+            return
+
+        self.title.set):
+        w = self.build_widgets()
