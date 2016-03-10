@@ -62,8 +62,6 @@ class PlacementView(WidgetWrap):
         w = self.build_widgets()
         super().__init__(w)
         self.reset_selections(top=True)  # calls self.update
-        ### TEMP
-        self.charm_search_widget.editbox.set_edit_text("apache-hadoop-plugin")
 
     def scroll_down(self):
         pass
