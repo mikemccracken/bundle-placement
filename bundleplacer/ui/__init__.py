@@ -175,7 +175,7 @@ class PlacementView(WidgetWrap):
         return self.machines_header_pile
 
     def get_relations_header(self):
-        return Text("RELATIONS!")
+        return Text("Relation Editor")
 
     def build_widgets(self):
 
