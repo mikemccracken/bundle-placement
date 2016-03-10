@@ -69,6 +69,7 @@ class SimpleServiceWidget(WidgetWrap):
         else:
             self.button = MenuSelectButton("I AM A SERVICE", self.do_select)
 
+        self.action_button_cols = Columns([], dividechars=1)
         self.action_buttons = []
 
         self.pile = Pile([self.button])
@@ -114,7 +115,7 @@ class SimpleServiceWidget(WidgetWrap):
         title_markup, _ = self.get_markup()
         msg = Padding(Text(title_markup), left=2, right=2, align='center')
         self.pile.contents = [(msg, self.pile.options()),
-                              (self.action_button_grid,
+                              (self.action_button_cols,
                                self.pile.options()),
                               (Divider(), self.pile.options())]
 
@@ -156,9 +157,9 @@ class SimpleServiceWidget(WidgetWrap):
             'button_secondary',
             'button_secondary focus'))
 
-        self.action_button_grid = Columns([b for b in
-                                           self.action_buttons],
-                                          dividechars=1)
+        opts = self.action_button_cols.options()
+        self.action_button_cols.contents = [(b, opts) for
+                                            b in self.action_buttons]
 
     def do_select(self, sender):
         self.display_controller.clear_selections()
@@ -169,7 +170,7 @@ class SimpleServiceWidget(WidgetWrap):
             self.display_controller.set_selected_service(self.service)
             self.state = ServiceWidgetState.CHOOSING
             self.pile.focus_position = 1
-            self.action_button_grid.focus_position = 0
+            self.action_button_cols.focus_position = 0
         self.update()
 
     def do_cancel(self, sender):
