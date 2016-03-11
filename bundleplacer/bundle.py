@@ -16,7 +16,7 @@
 from concurrent.futures import Future
 from functools import partial
 import logging
-from theblues.charmstore import CharmStore
+import requests
 from threading import RLock
 import yaml
 from bundleplacer.async import submit
@@ -33,17 +33,20 @@ class CharmStoreAPI:
     requested charm info
 
     """
-    _charmstore = None
     _cache = {}
     _cachelock = RLock()
 
     def __init__(self):
-        if not CharmStoreAPI._charmstore:
-            csurl = 'https://api.jujucharms.com/v4'
-            CharmStoreAPI._charmstore = CharmStore(csurl)
+        self.baseurl = 'https://api.jujucharms.com/v4'
 
     def _do_remote_lookup(self, charm_name, metakey):
-        entity = CharmStoreAPI._charmstore.entity(charm_name)
+        url = (self.baseurl + '/meta/' +
+               'any?include=charm-metadata&id={}'.format(charm_name))
+        r = requests.get(url)
+        rj = r.json()
+        if len(rj.items()) != 1:
+            raise Exception("Got wrong number of results from charm store")
+        entity = list(rj.values())[0]
         with CharmStoreAPI._cachelock:
             CharmStoreAPI._cache[charm_name] = entity
         return entity
