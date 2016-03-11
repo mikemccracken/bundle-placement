@@ -126,7 +126,8 @@ def create_service(servicename, service_dict, servicemeta, relations):
                           list(AssignmentType)),
                       num_units=service_dict.get('num_units', 1),
                       options=service_dict.get('options', {}),
-                      allow_multi_units=servicemeta.get('allow_multi_units', True),
+                      allow_multi_units=servicemeta.get('allow_multi_units',
+                                                        True),
                       subordinate=is_subordinate,
                       required=servicemeta.get('required', True),
                       relations=myrelations)
@@ -180,7 +181,7 @@ class Bundle:
         return ([a, b] in rels or [b, a] in rels or
                 [s1_name, s2_name] in rels or
                 [s2_name, s1_name] in rels)
-    
+
     @property
     def services(self):
         services = []
@@ -196,4 +197,3 @@ class Bundle:
     def extra_items(self):
         return {k: v for k, v in self._bundle.items()
                 if k not in ['services', 'machines', 'relations']}
-
