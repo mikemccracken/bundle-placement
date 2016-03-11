@@ -23,6 +23,7 @@ from bundleplacer.async import submit
 from bundleplacer.service import Service
 from bundleplacer.assignmenttype import AssignmentType, label_to_atype
 
+
 log = logging.getLogger('bundleplacer')
 
 
@@ -94,6 +95,16 @@ class CharmStoreAPI:
 
     def get_entity(self, charm_name, exc_cb):
         return self._lookup(charm_name, None, exc_cb)
+
+    def get_matches(self, substring, exc_cb):
+        def _do_search():
+            url = (self.baseurl + "/search?text={}".format(substring) +
+                   "&autocomplete=1&limit=10&include=charm-metadata")
+            r = requests.get(url)
+            rj = r.json()
+            return rj
+        f = submit(_do_search, exc_cb)
+        return f
 
 
 def create_service(servicename, service_dict, servicemeta, relations):

@@ -141,16 +141,22 @@ class PlacementView(WidgetWrap):
         self.services_button_grid = GridFlow(self.services_buttons,
                                              36, 1, 0, 'center')
 
-        self.services_header_pile = Pile([Text(("body", "Services"),
+        self.services_header_pile = Pile([Text(("bobdy", "Services"),
                                                align='center'),
                                           Divider(),
                                           self.services_button_grid])
 
         return self.services_header_pile
 
-    def get_charmstore_header(self):
-        self.charm_search_widget = CharmStoreSearchWidget(self.do_add_charm)
-        return self.charm_search_widget
+    def get_charmstore_header(self, charmstore_column):
+        self.charm_search_widget = CharmStoreSearchWidget(self.do_add_charm,
+                                                          charmstore_column)
+        self.charm_search_header_pile = Pile([Text(("bobdy", "Add Charms"),
+                                                   align='center'),
+                                              Divider(),
+                                              self.charm_search_widget])
+
+        return self.charm_search_header_pile
 
     def get_machines_header(self, machines_column):
 
@@ -289,16 +295,14 @@ class PlacementView(WidgetWrap):
         """Add new service and focus its widget.
 
         """
+        assert(self.state == UIState.CHARMSTORE_VIEW)
         service_name = self.placement_controller.add_new_service(charm_name,
                                                                  charm_dict)
         self.frame.focus_position = 'body'
         self.columns.focus_position = 0
+        self.relations_column.add_charm(charm_name)
         self.update()
-        if self.state == UIState.RELATION_EDITOR:
-            self.relations_column.add_charm(charm_name)
-            self.relations_column.refresh()
-        else:
-            self.services_column.select_service(service_name)
+        self.services_column.select_service(service_name)
 
     def do_clear_machine(self, sender, machine):
         self.placement_controller.clear_assignments(machine)
@@ -309,6 +313,7 @@ class PlacementView(WidgetWrap):
 
     def reset_selections(self, top=False):
         self.clear_selections()
+        self.state = UIState.CHARMSTORE_VIEW
         self.update()
         self.columns.focus_position = 0
 
@@ -327,12 +332,16 @@ class PlacementView(WidgetWrap):
 
     def focus_charmstore_column(self):
         self.columns.focus_position = 1
-        self.charmstore_column.focus()
+        self.charmstore_column.focus_prev_or_top()
 
     def edit_placement(self):
         self.state = UIState.PLACEMENT_EDITOR
         self.update()
         self.focus_machines_column()
+
+    def show_default_view(self):
+        self.state = UIState.CHARMSTORE_VIEW
+        self.update()
 
     def edit_relations(self, service):
         self.state = UIState.RELATION_EDITOR
