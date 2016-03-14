@@ -268,10 +268,14 @@ class PlacementView(WidgetWrap):
 
         unplaced = self.placement_controller.unassigned_undeployed_services()
         all = self.placement_controller.services()
-        n_total = len(all)
-        remaining = len(unplaced) + len([c for c in all if c.subordinate])
-        dmsg = "Deploy\n(Auto-assigning {}/{} charms)".format(remaining,
-                                                              n_total)
+        n_subs = len([c for c in all if c.subordinate])
+        n_total = len(all) - n_subs
+        remaining = len(unplaced) - n_subs
+        if remaining > 0:
+            dmsg = "Auto-assigning {}/{} charms".format(remaining,
+                                                                  n_total)
+        else:
+            dmsg = ""
         self.deploy_button_label.set_text(dmsg)
 
     def browse_maas(self, sender):
