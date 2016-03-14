@@ -90,25 +90,21 @@ class CharmStoreSearchWidget(WidgetWrap):
                                                          self.really_search)
 
     def really_search(self, *args, **kwargs):
-        if self.charmstore_column:
-            msg = "Searching for {}".format(self.search_text)
-            self.charmstore_column.set_msg(msg)
         self.search_delay_alarm = None
         self._search_future = self.api.get_matches(self.search_text,
                                                    self.handle_search_error)
 
         def update_immediately(future):
             self.update()
-            msg = "Charms matching {}:".format(self.search_text)
-            self.charmstore_column.set_msg(msg)
+            self.charmstore_column.searching = False
             self.charmstore_column.update()
 
-        self._search_future.add_done_callback(update_immediately)
+        if self.charmstore_column:
+            self._search_future.add_done_callback(update_immediately)
 
     def handle_search_error(self, e):
         if self.charmstore_column:
-            msg = "Error searching for {}: {}".format(self.search_text, e)
-            self.charmstore_column.set_msg(msg)
+            self.charmstore_colum.handle_error(e)
 
     def do_add_charm(self, sender):
         self.add_cb(self.search_text, self._search_result)
@@ -130,7 +126,7 @@ class CharmWidget(WidgetWrap):
         self.charm_name = self.md['Name']
         source = self.charm_source
         summary = self.md['Summary']
-        s = "{} ({})\n  {}".format(self.charm_name, source, summary)
+        s = "{} ({})\n    {}\n".format(self.charm_name, source, summary)
         return AttrMap(MenuSelectButton(s, on_press=self.handle_press),
                        'text',
                        'button_secondary focus')
@@ -157,6 +153,7 @@ class CharmstoreColumn(WidgetWrap):
         super().__init__(w)
         self._related_charms = []
         self._search_results = []
+        self.searching = False
         self.refresh_related()
         self.update()
 
@@ -179,16 +176,39 @@ class CharmstoreColumn(WidgetWrap):
         else:
             self.state = CharmstoreColumnUIState.SEARCH_RESULTS
         self.current_search_string = s
+        self.searching = True
         self.update()
 
     def update(self):
         if self.state == CharmstoreColumnUIState.RELATED:
-            self.title.set_text("Charms Related to this Bundle")
-            self.pile.contents = self.pile.contents[:2]
+            self.update_related()
         else:
-            opts = self.pile.options()
-            self.pile.contents[2:] = [(CharmWidget(n, d, self.do_add_charm),
-                                       opts) for n, d in self._search_results]
+            self.update_results()
+
+    def update_related(self):
+        self.title.set_text("Charms Related to this Bundle")
+        self.pile.contents = self.pile.contents[:2]
+
+    def update_results(self):
+        opts = self.pile.options()
+        self.pile.contents[2:] = [(CharmWidget(n, d, self.do_add_charm),
+                                   opts) for n, d in self._search_results]
+        if self.searching:
+            msg = "Searching for '{}'…\n".format(self.current_search_string)
+            self.title.set_text(msg)
+        else:
+            n = len(self._search_results)
+            if n == 0:
+                advice = ""
+                if len(self.current_search_string) < 3:
+                    advice = "Try a longer search string."
+                msg = ("No charms found matching '{}' "
+                       "{}\n".format(self.current_search_string,
+                                     advice))
+            else:
+                msg = ("{} charms matching {}:"
+                       "\n".format(n, self.current_search_string))
+        self.title.set_text(msg)
 
     def add_result(self, charm_name, charm_dict):
         self._search_results.append((charm_name, charm_dict))
@@ -200,5 +220,7 @@ class CharmstoreColumn(WidgetWrap):
         self.placement_view.do_add_charm(charm_name,
                                          charm_dict)
 
-    def set_msg(self, msg):
+    def handle_error(self, e):
+        msg = "Error searching for {}: {}".format(self.current_search_string,
+                                                  e)
         self.title.set_text(msg)
