@@ -20,7 +20,7 @@ from subprocess import Popen, PIPE, TimeoutExpired
 from urwid import (AttrMap, Columns, Divider, Filler, Overlay,
                    GridFlow, Frame, Padding, Pile, Text, WidgetWrap)
 
-from ubuntui.widgets.buttons import PlainButton
+from ubuntui.widgets.buttons import PlainButton, MenuSelectButton
 from ubuntui.views import InfoDialogWidget
 from ubuntui.widgets import MetaScroll
 
@@ -218,8 +218,8 @@ class PlacementView(WidgetWrap):
         self.columns = Columns([self.services_column,
                                 self.machines_column], dividechars=2)
 
-        self.deploy_button = PlainButton("\nDeploy\n",
-                                         on_press=self.do_deploy)
+        self.deploy_button = MenuSelectButton("\nDeploy\n",
+                                              on_press=self.do_deploy)
         self.deploy_button_label = Text("Some charms use default")
         self.placement_edit_body = Filler(Padding(self.columns,
                                                   align='center',
