@@ -139,6 +139,12 @@ class SimpleServiceWidget(WidgetWrap):
         else:
             self.update_default()
 
+    def keypress(self, size, key):
+        if key == 'backspace':
+            self.display_controller.remove_service(self.service)
+
+        return super().keypress(size, key)
+
     def update_action_buttons(self):
 
         all_actions = [('Choose Placement',

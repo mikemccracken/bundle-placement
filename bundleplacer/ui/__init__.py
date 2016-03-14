@@ -41,6 +41,7 @@ class UIState(Enum):
     RELATION_EDITOR = 1
     CHARMSTORE_VIEW = 2         # This is the default
 
+
 class PlacementView(WidgetWrap):
 
     """

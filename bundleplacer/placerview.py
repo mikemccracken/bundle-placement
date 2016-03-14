@@ -72,6 +72,10 @@ class PlacerView(WidgetWrap):
     def set_selected_service(self, service):
         self.selected_service = service
 
+    def remove_service(self, service):
+        self.placement_controller.remove_service(service.service_name)
+        self.pv.update()
+
     def show_default_view(self):
         self.pv.show_default_view()
 
