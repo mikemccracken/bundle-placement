@@ -214,7 +214,8 @@ class CharmstoreColumn(WidgetWrap):
         self._search_results.append((charm_name, charm_dict))
 
     def focus_prev_or_top(self):
-        self.pile.focus_position = 2
+        if len(self.pile.contents) > 2:
+            self.pile.focus_position = 2
 
     def do_add_charm(self, charm_name, charm_dict):
         self.placement_view.do_add_charm(charm_name,
