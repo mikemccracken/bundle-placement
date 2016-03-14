@@ -54,7 +54,9 @@ class PlacementView(WidgetWrap):
     """
 
     def __init__(self, display_controller, placement_controller,
-                 config, do_deploy_cb, initial_state=UIState.CHARMSTORE_VIEW):
+                 config, do_deploy_cb,
+                 initial_state=UIState.CHARMSTORE_VIEW,
+                 has_maas=False):
         self.display_controller = display_controller
         self.placement_controller = placement_controller
         self.config = config

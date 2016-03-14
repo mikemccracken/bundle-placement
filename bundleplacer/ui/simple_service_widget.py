@@ -146,11 +146,12 @@ class SimpleServiceWidget(WidgetWrap):
         return super().keypress(size, key)
 
     def update_action_buttons(self):
-
-        all_actions = [('Choose Placement',
-                        self.handle_placement_button_pressed),
-                       ('Edit Relations',
-                        self.handle_relation_button_pressed)]
+        all_actions = []
+        if self.display_controller.has_maas:
+            all_actions = [('Choose Placement',
+                            self.handle_placement_button_pressed)]
+        all_actions.append(('Edit Relations',
+                            self.handle_relation_button_pressed))
 
         self.action_buttons = [AttrMap(MenuSelectButton(label, on_press=func),
                                        'button_secondary',
