@@ -17,9 +17,10 @@ from enum import Enum
 import logging
 from subprocess import Popen, PIPE, TimeoutExpired
 
-from urwid import (AttrMap, Button, Columns, Divider, Filler, Overlay,
+from urwid import (AttrMap, Columns, Divider, Filler, Overlay,
                    GridFlow, Frame, Padding, Pile, Text, WidgetWrap)
 
+from ubuntui.widgets.buttons import PlainButton
 from ubuntui.views import InfoDialogWidget
 from ubuntui.widgets import MetaScroll
 
@@ -132,8 +133,9 @@ class PlacementView(WidgetWrap):
             return self._w.keypress(size, key)
 
     def get_services_header(self):
-        self.clear_all_button = AttrMap(Button("Clear All Placements",
-                                               on_press=self.do_clear_all),
+        b = PlainButton("Clear All Placements",
+                        on_press=self.do_clear_all)
+        self.clear_all_button = AttrMap(b,
                                         'button_secondary',
                                         'button_secondary focus')
 
@@ -159,9 +161,9 @@ class PlacementView(WidgetWrap):
         return self.charm_search_header_pile
 
     def get_machines_header(self, machines_column):
-
-        self.open_maas_button = AttrMap(Button("Open in Browser",
-                                               on_press=self.browse_maas),
+        b = PlainButton("Open in Browser",
+                        on_press=self.browse_maas)
+        self.open_maas_button = AttrMap(b,
                                         'button_secondary',
                                         'button_secondary focus')
 
@@ -216,14 +218,15 @@ class PlacementView(WidgetWrap):
         self.columns = Columns([self.services_column,
                                 self.machines_column], dividechars=2)
 
-        self.deploy_button = Button("Deploy", on_press=self.do_deploy)
+        self.deploy_button = PlainButton("\nDeploy\n",
+                                         on_press=self.do_deploy)
         self.deploy_button_label = Text("Some charms use default")
         self.placement_edit_body = Filler(Padding(self.columns,
                                                   align='center',
                                                   width=('relative', 95)),
                                           valign='top')
         b = AttrMap(self.deploy_button,
-                    'button_primary',
+                    'frame_header',
                     'button_primary focus')
 
         self.frame = Frame(header=self.header_columns,
@@ -266,8 +269,8 @@ class PlacementView(WidgetWrap):
         all = self.placement_controller.services()
         n_total = len(all)
         remaining = len(unplaced) + len([c for c in all if c.subordinate])
-        dmsg = "Deploy (Auto-assigning {}/{} charms)".format(remaining,
-                                                             n_total)
+        dmsg = "Deploy\n(Auto-assigning {}/{} charms)".format(remaining,
+                                                              n_total)
         self.deploy_button_label.set_text(dmsg)
 
     def browse_maas(self, sender):
