@@ -31,7 +31,7 @@ log = logging.getLogger('bundleplacer')
 
 class CharmStoreSearchWidget(WidgetWrap):
 
-    def __init__(self, add_cb, charmstore_column=None):
+    def __init__(self, add_cb, charmstore_column):
         self.add_cb = add_cb
         self.charmstore_column = charmstore_column
         self.api = CharmStoreAPI()
@@ -39,6 +39,7 @@ class CharmStoreSearchWidget(WidgetWrap):
         self.search_text = ""
         self._search_future = None
         self._search_result = None
+        self._suggested_results = None
         w = self.build_widgets()
         super().__init__(w)
 
@@ -52,40 +53,37 @@ class CharmStoreSearchWidget(WidgetWrap):
                                'filter', 'filter_focus'), left=2, right=2)
 
     def update(self):
+        if self._search_future is None and self._suggested_results is None:
+            self.really_search()
+
         if self._search_future and self._search_future.done():
             self._search_result = self._search_future.result()
             self._search_future = None
+
+            if self._suggested_results is None:
+                self._suggested_results = self._search_result
             
             # result being None indicates an error, which was handled by
             # handle_search_error.
             if self._search_result is None:
                 return
-            if self.charmstore_column is None:
-                return
+            self.set_column(self._search_result['Results'])
 
-            self.charmstore_column.clear_search_results()
-            results = self._search_result['Results']
-            for r in results:
-                match_name = r['Id']
-                self.charmstore_column.add_result(match_name, r)
-            self.charmstore_column.update()
-
-            return
+    def set_column(self, results):
+        self.charmstore_column.clear_search_results()
+        for r in results:
+            match_name = r['Id']
+            self.charmstore_column.add_result(match_name, r)
+        self.charmstore_column.update()
 
     def handle_edit_changed(self, sender, userdata):
         self.search_text = userdata
-        if self.charmstore_column:
-            
-            self.enqueue_search(None)
-            self.charmstore_column.handle_search_change(userdata)
+        self.enqueue_search()
+        self.charmstore_column.handle_search_change(userdata)
 
-    def enqueue_search(self, sender):
+    def enqueue_search(self):
         if self.search_delay_alarm:
             EventLoop.remove_alarm(self.search_delay_alarm)
-
-        if self.search_text == "":
-            return
-
         self.search_delay_alarm = EventLoop.set_alarm_in(0.5,
                                                          self.really_search)
 
@@ -99,12 +97,10 @@ class CharmStoreSearchWidget(WidgetWrap):
             self.charmstore_column.searching = False
             self.charmstore_column.update()
 
-        if self.charmstore_column:
-            self._search_future.add_done_callback(update_immediately)
+        self._search_future.add_done_callback(update_immediately)
 
     def handle_search_error(self, e):
-        if self.charmstore_column:
-            self.charmstore_colum.handle_error(e)
+        self.charmstore_column.handle_error(e)
 
     def do_add_charm(self, sender):
         self.add_cb(self.search_text, self._search_result)
@@ -180,35 +176,32 @@ class CharmstoreColumn(WidgetWrap):
         self.update()
 
     def update(self):
-        if self.state == CharmstoreColumnUIState.RELATED:
-            self.update_related()
-        else:
-            self.update_results()
-
-    def update_related(self):
-        self.title.set_text("Charms Related to this Bundle")
-        self.pile.contents = self.pile.contents[:2]
-
-    def update_results(self):
         opts = self.pile.options()
         self.pile.contents[2:] = [(CharmWidget(n, d, self.do_add_charm),
-                                   opts) for n, d in self._search_results]
-        if self.searching:
-            msg = "Searching for '{}'…\n".format(self.current_search_string)
-            self.title.set_text(msg)
+                                   opts) for n, d in self._search_results
+                                  if 'Meta' in d]
+        if self.state == CharmstoreColumnUIState.RELATED:
+            #self.title.set_text("Charms Related to this Bundle")
+            self.title.set_text("Popular Charms:")
+
         else:
-            n = len(self._search_results)
-            if n == 0:
-                advice = ""
-                if len(self.current_search_string) < 3:
-                    advice = "Try a longer search string."
-                msg = ("No charms found matching '{}' "
-                       "{}\n".format(self.current_search_string,
-                                     advice))
+            if self.searching:
+                msg = "Searching for '{}'…\n".format(
+                    self.current_search_string)
+                self.title.set_text(msg)
             else:
-                msg = ("{} charms matching {}:"
-                       "\n".format(n, self.current_search_string))
-        self.title.set_text(msg)
+                n = len(self._search_results)
+                if n == 0:
+                    advice = ""
+                    if len(self.current_search_string) < 3:
+                        advice = "Try a longer search string."
+                    msg = ("No charms found matching '{}' "
+                           "{}\n".format(self.current_search_string,
+                                         advice))
+                else:
+                    msg = ("{} charms matching {}:"
+                           "\n".format(n, self.current_search_string))
+            self.title.set_text(msg)
 
     def add_result(self, charm_name, charm_dict):
         self._search_results.append((charm_name, charm_dict))
