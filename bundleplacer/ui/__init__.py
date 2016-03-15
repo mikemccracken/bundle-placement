@@ -146,7 +146,7 @@ class PlacementView(WidgetWrap):
         self.services_button_grid = GridFlow(self.services_buttons,
                                              36, 1, 0, 'center')
 
-        self.services_header_pile = Pile([Text(("bobdy", "Services"),
+        self.services_header_pile = Pile([Text(("body", "Services"),
                                                align='center'),
                                           Divider(),
                                           self.services_button_grid])
@@ -156,7 +156,7 @@ class PlacementView(WidgetWrap):
     def get_charmstore_header(self, charmstore_column):
         self.charm_search_widget = CharmStoreSearchWidget(self.do_add_charm,
                                                           charmstore_column)
-        self.charm_search_header_pile = Pile([Text(("bobdy", "Add Charms"),
+        self.charm_search_header_pile = Pile([Text(("body", "Add Charms"),
                                                    align='center'),
                                               Divider(),
                                               self.charm_search_widget])
