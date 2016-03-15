@@ -235,7 +235,8 @@ class PlacementView(WidgetWrap):
         self.frame = Frame(header=self.header_columns,
                            body=self.placement_edit_body,
                            footer=GridFlow([self.deploy_button_label,
-                                            b], 22, 1, 1, 'right'))
+                                            Padding(b, width=28, align='center')],
+                                           28, 1, 1, 'right'))
         return self.frame
 
     def update(self):
@@ -274,8 +275,8 @@ class PlacementView(WidgetWrap):
         n_total = len(all) - n_subs
         remaining = len(unplaced) - n_subs
         if remaining > 0:
-            dmsg = "Auto-assigning {}/{} charms".format(remaining,
-                                                                  n_total)
+            dmsg = "\nAuto-assigning {}/{} services".format(remaining,
+                                                            n_total)
         else:
             dmsg = ""
         self.deploy_button_label.set_text(dmsg)
