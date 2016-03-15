@@ -62,6 +62,7 @@ class PlacementView(WidgetWrap):
         self.config = config
         self.do_deploy_cb = do_deploy_cb
         self.state = initial_state
+        self.has_maas = has_maas
         self.prev_state = None
         w = self.build_widgets()
         super().__init__(w)
@@ -146,12 +147,12 @@ class PlacementView(WidgetWrap):
         self.services_button_grid = GridFlow(self.services_buttons,
                                              36, 1, 0, 'center')
 
-        self.services_header_pile = Pile([Text(("body", "Services"),
-                                               align='center'),
-                                          Divider(),
-                                          self.services_button_grid])
+        ws = [Text(("body", "Services"), align='center'),
+              Divider()]
+        if self.has_maas:
+            ws.append(self.services_button_grid)
 
-        return self.services_header_pile
+        return Pile(ws)
 
     def get_charmstore_header(self, charmstore_column):
         self.charm_search_widget = CharmStoreSearchWidget(self.do_add_charm,
