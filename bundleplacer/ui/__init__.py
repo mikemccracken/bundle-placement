@@ -76,7 +76,7 @@ class PlacementView(WidgetWrap):
 
     def focus_footer(self):
         self.frame.focus_position = 'footer'
-        self.frame.footer.focus_position = 1
+        self.footer_grid.focus_position = 1
 
     def handle_tab(self, backward):
         if self.state == UIState.RELATION_EDITOR:
@@ -232,12 +232,13 @@ class PlacementView(WidgetWrap):
         b = AttrMap(self.deploy_button,
                     'frame_header',
                     'button_primary focus')
-        f = AttrMap(GridFlow([self.deploy_button_label,
-                              Padding(b, width=28,
-                                      align='center')],
-                             28, 1, 1, 'right'),
+        self.footer_grid = GridFlow([self.deploy_button_label,
+                                     Padding(b, width=28,
+                                             align='center')],
+                                    28, 1, 1, 'right')
+        f = AttrMap(self.footer_grid,
                     'frame_footer',
-                    'button_primary focus')
+                    'frame_footer')
 
         self.frame = Frame(header=self.header_columns,
                            body=self.placement_edit_body,
