@@ -112,9 +112,9 @@ class SimpleMachineWidget(WidgetWrap):
         all_actions = [(AssignmentType.BareMetal,
                         'Add as Bare Metal',
                         self.select_baremetal),
-                       (AssignmentType.LXC,
-                        'Add as LXC',
-                        self.select_lxc),
+                       (AssignmentType.LXD,
+                        'Add as LXD',
+                        self.select_lxd),
                        (AssignmentType.KVM,
                         'Add as KVM',
                         self.select_kvm)]
@@ -163,8 +163,8 @@ class SimpleMachineWidget(WidgetWrap):
     def _do_select_assignment(self, atype):
         {AssignmentType.BareMetal:
          self.display_controller.do_select_baremetal,
-         AssignmentType.LXC:
-         self.display_controller.do_select_lxc,
+         AssignmentType.LXD:
+         self.display_controller.do_select_lxd,
          AssignmentType.KVM:
          self.display_controller.do_select_kvm}[atype](self.machine)
         self.pile.focus_position = 0
@@ -172,8 +172,8 @@ class SimpleMachineWidget(WidgetWrap):
     def select_baremetal(self, sender):
         self._do_select_assignment(AssignmentType.BareMetal)
 
-    def select_lxc(self, sender):
-        self._do_select_assignment(AssignmentType.LXC)
+    def select_lxd(self, sender):
+        self._do_select_assignment(AssignmentType.LXD)
 
     def select_kvm(self, sender):
         self._do_select_assignment(AssignmentType.KVM)
