@@ -19,7 +19,7 @@ from enum import Enum
 from urwid import (AttrMap, Divider, Pile, WidgetWrap,
                    Padding, Text, Columns)
 
-from ubuntui.widgets.buttons import MenuSelectButton
+from ubuntui.widgets.buttons import MenuSelectButton, PlainButton
 
 
 class ServiceWidgetState(Enum):
@@ -148,14 +148,14 @@ class SimpleServiceWidget(WidgetWrap):
         all_actions.append(('Edit Relations',
                             self.handle_relation_button_pressed))
 
-        self.action_buttons = [AttrMap(MenuSelectButton(label, on_press=func),
+        self.action_buttons = [AttrMap(PlainButton(label, on_press=func),
                                        'button_secondary',
                                        'button_secondary focus')
                                for label, func in all_actions]
 
         self.action_buttons.append(AttrMap(
-            MenuSelectButton("Cancel",
-                             on_press=self.do_cancel),
+            PlainButton("Cancel",
+                        on_press=self.do_cancel),
             'button_secondary',
             'button_secondary focus'))
 
