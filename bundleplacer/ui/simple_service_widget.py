@@ -79,12 +79,7 @@ class SimpleServiceWidget(WidgetWrap):
         if self.service.subordinate:
             return self.title_markup, []
 
-        if self.state == ServiceWidgetState.SELECTED:
-            selection_markup = ["\N{BALLOT BOX WITH CHECK} "]
-        else:
-            selection_markup = ["\N{BALLOT BOX} "]
-
-        main_markup = selection_markup + self.title_markup
+        main_markup = self.title_markup
 
         info_markup = []
         p = self.placement_controller.get_assignments(self.service)
