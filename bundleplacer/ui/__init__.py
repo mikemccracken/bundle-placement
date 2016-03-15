@@ -232,12 +232,16 @@ class PlacementView(WidgetWrap):
         b = AttrMap(self.deploy_button,
                     'frame_header',
                     'button_primary focus')
+        f = AttrMap(GridFlow([self.deploy_button_label,
+                              Padding(b, width=28,
+                                      align='center')],
+                             28, 1, 1, 'right'),
+                    'frame_footer',
+                    'button_primary focus')
 
         self.frame = Frame(header=self.header_columns,
                            body=self.placement_edit_body,
-                           footer=GridFlow([self.deploy_button_label,
-                                            Padding(b, width=28, align='center')],
-                                           28, 1, 1, 'right'))
+                           footer=f)
         return self.frame
 
     def update(self):
