@@ -295,6 +295,7 @@ class RelationsColumn(WidgetWrap):
                                                   source_relname,
                                                   tgt_service_name,
                                                   tgt_relation_name)
+        self.update()
 
     def sort_relation_widgets(self):
         def keyfunc(rw):
