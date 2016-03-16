@@ -288,7 +288,7 @@ class RelationsColumn(WidgetWrap):
 
     def do_select(self, source_relname, tgt_service_name,
                   tgt_relation_name):
-        self.placement_controller.add_relation(self.service.service_name,
-                                               source_relname,
-                                               tgt_service_name,
-                                               tgt_relation_name)
+        self.placement_controller.toggle_relation(self.service.service_name,
+                                                  source_relname,
+                                                  tgt_service_name,
+                                                  tgt_relation_name)
