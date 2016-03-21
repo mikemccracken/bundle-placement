@@ -1,0 +1,14 @@
+{
+    "repos": [
+        {
+            "url": "https://github.com/Ubuntu-Solutions-Engineering/urwid-ubuntu.git",
+            "version": "master",
+            "directories": "ubuntui"
+        },
+        {
+            "url": "https://github.com/Ubuntu-Solutions-Engineering/maasclient.git",
+            "version": "357db23",
+            "directories": "maasclient"
+        }
+    ]
+}

@@ -1,11 +1,6 @@
-
 TOPDIR              := $(shell git rev-parse --show-toplevel)
 GIT_REV		    := $(shell git log --oneline -n1| cut -d" " -f1)
 VERSION             := $(shell ./tools/version)
-UPSTREAM_MAASCLIENT := https://github.com/Ubuntu-Solutions-Engineering/maasclient.git
-UPSTREAM_MAASCLIENT_COMMIT := 357db23
-UPSTREAM_UBUNTUI := https://github.com/Ubuntu-Solutions-Engineering/urwid-ubuntu
-UPSTREAM_UBUNTUI_COMMIT := master
 
 
 .PHONY: install-dependencies
@@ -39,17 +34,8 @@ current_version:
 	@echo $(VERSION)
 
 git-sync-requirements:
-	@echo Syncing git repos
-	rm -rf tmp && mkdir -p tmp
-	rm -rf maasclient
-	rm -rf ubuntui
-	git clone -q $(UPSTREAM_MAASCLIENT) tmp/maasclient
-	(cd tmp/maasclient && git checkout -q -f $(UPSTREAM_MAASCLIENT_COMMIT))
-	rsync -az --delete tmp/maasclient/maasclient .
-	git clone -q $(UPSTREAM_UBUNTUI) tmp/ubuntui
-	(cd tmp/ubuntui && git checkout -q -f $(UPSTREAM_UBUNTUI_COMMIT))
-	rsync -az --delete tmp/ubuntui/ubuntui .
-	rm -rf tmp
+	if [ ! -f tools/sync-repo.py ]; then echo "Need to download sync-repo.py from https://git.io/v2mEw" && exit 1; fi
+	tools/sync-repo.py -m repo-manifest.json -f
 
 git_rev:
 	@echo $(GIT_REV)
